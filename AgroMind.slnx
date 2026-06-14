@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AgroMind.API/AgroMind.API.csproj" />
+    <Project Path="src/AgroMind.Application/AgroMind.Application.csproj" />
+    <Project Path="src/AgroMind.Domain/AgroMind.Domain.csproj" />
+    <Project Path="src/AgroMind.Infrastructure/AgroMind.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AgroMind.IntegrationTests/AgroMind.IntegrationTests.csproj" />
+    <Project Path="tests/AgroMind.UnitTests/AgroMind.UnitTests.csproj" />
+  </Folder>
+</Solution>
