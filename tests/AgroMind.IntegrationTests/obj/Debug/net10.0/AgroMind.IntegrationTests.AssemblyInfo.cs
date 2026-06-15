@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AgroMind.IntegrationTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+67543d881a03a7f61652506b44cfe91a1108b4c8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+466d107eb1e10950f13ad92e8d2614def5914dc5")]
 [assembly: System.Reflection.AssemblyProductAttribute("AgroMind.IntegrationTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AgroMind.IntegrationTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
