@@ -1,6 +1,8 @@
 using AgroMind.Application.Common.Interfaces;
 using AgroMind.Infrastructure.Persistence;
 using AgroMind.Infrastructure.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,15 +15,40 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        var connectionString = configuration.GetConnectionString("DefaultConnection")!;
+
+        // AuditInterceptor — registrado como singleton para ser injetado no DbContext
+        services.AddSingleton<AuditInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(connectionString);
+            options.AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
+        });
 
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
 
+        // Serviços de domínio
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IEmailService, EmailService>();
+
+        // Cache em memória (TTL gerenciado por quem usa)
+        services.AddMemoryCache();
+
+// Hangfire com PostgreSQL
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(options =>
+                options.UseNpgsqlConnection(connectionString)));
+        services.AddHangfireServer(options =>
+        {
+            options.WorkerCount = 2;
+            options.Queues = ["default", "agromind"];
+        });
 
         return services;
     }
