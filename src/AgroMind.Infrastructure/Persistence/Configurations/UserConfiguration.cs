@@ -14,5 +14,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Email).IsUnique();
         builder.Property(u => u.SenhaHash).IsRequired();
         builder.Property(u => u.Role).HasConversion<string>();
+        builder.Property(u => u.RefreshToken).HasMaxLength(500);
+        builder.Property(u => u.RefreshTokenExpiry);
     }
 }

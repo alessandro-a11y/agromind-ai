@@ -34,6 +34,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
+        // Persiste o refresh token para validação futura (rotation)
+        user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));
+        await _context.SaveChangesAsync(cancellationToken);
+
         return Result<AuthResponse>.Ok(new AuthResponse(
             accessToken,
             refreshToken,

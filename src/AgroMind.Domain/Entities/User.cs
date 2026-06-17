@@ -10,6 +10,11 @@ public class User
     public string SenhaHash { get; private set; } = string.Empty;
     public UserRole Role { get; private set; }
     public DateTime CreatedAt { get; private set; }
+
+    // Refresh Token rotation
+    public string? RefreshToken { get; private set; }
+    public DateTime? RefreshTokenExpiry { get; private set; }
+
     public ICollection<Farm> Farms { get; private set; } = new List<Farm>();
 
     protected User() { }
@@ -26,4 +31,19 @@ public class User
 
     public void UpdateNome(string nome) => Nome = nome;
     public void UpdateSenha(string senhaHash) => SenhaHash = senhaHash;
+
+    public void SetRefreshToken(string token, DateTime expiry)
+    {
+        RefreshToken = token;
+        RefreshTokenExpiry = expiry;
+    }
+
+    public void RevokeRefreshToken()
+    {
+        RefreshToken = null;
+        RefreshTokenExpiry = null;
+    }
+
+    public bool IsRefreshTokenValid(string token) =>
+        RefreshToken == token && RefreshTokenExpiry > DateTime.UtcNow;
 }
