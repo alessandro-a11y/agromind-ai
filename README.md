@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge" />
   <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge" />
   <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge" />
   <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge" />
