@@ -6,6 +6,7 @@ using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AgroMind.Infrastructure.Services.Weather;
 
 namespace AgroMind.Infrastructure;
 
@@ -50,6 +51,7 @@ public static class DependencyInjection
             options.Queues = ["default", "agromind"];
         });
 
+        services.AddHttpClient<IWeatherService, WeatherService>();
         return services;
     }
 }

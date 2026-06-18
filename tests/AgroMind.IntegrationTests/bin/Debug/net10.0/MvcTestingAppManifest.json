@@ -1,6 +1,6 @@
 {
-  "AgroMind.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/mnt\/d\/agromind-ai\/src\/AgroMind.API",
-  "AgroMind.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/mnt\/d\/agromind-ai\/src\/AgroMind.Application",
-  "AgroMind.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/mnt\/d\/agromind-ai\/src\/AgroMind.Domain",
-  "AgroMind.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/mnt\/d\/agromind-ai\/src\/AgroMind.Infrastructure"
+  "AgroMind.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\agromind-ai\\src\\AgroMind.API",
+  "AgroMind.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\agromind-ai\\src\\AgroMind.Application",
+  "AgroMind.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\agromind-ai\\src\\AgroMind.Domain",
+  "AgroMind.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\agromind-ai\\src\\AgroMind.Infrastructure"
 }

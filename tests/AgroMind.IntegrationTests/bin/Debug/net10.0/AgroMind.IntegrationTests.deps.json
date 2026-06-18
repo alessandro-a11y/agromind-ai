@@ -592,7 +592,7 @@
         "runtime": {
           "lib/netcoreapp3.0/Hangfire.AspNetCore.dll": {
             "assemblyVersion": "1.8.23.0",
-            "fileVersion": "0.0.0.0"
+            "fileVersion": "1.8.23.0"
           }
         },
         "compile": {
@@ -606,7 +606,7 @@
         "runtime": {
           "lib/netstandard2.0/Hangfire.Core.dll": {
             "assemblyVersion": "1.8.23.0",
-            "fileVersion": "0.0.0.0"
+            "fileVersion": "1.8.23.0"
           }
         },
         "resources": {
@@ -667,7 +667,7 @@
         "runtime": {
           "lib/netstandard2.1/Hangfire.NetCore.dll": {
             "assemblyVersion": "1.8.23.0",
-            "fileVersion": "0.0.0.0"
+            "fileVersion": "1.8.23.0"
           }
         },
         "compile": {
@@ -1477,16 +1477,6 @@
           "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll": {}
         }
       },
-      "System.Diagnostics.EventLog/10.0.9": {
-        "runtimeTargets": {
-          "runtimes/win/lib/net10.0/System.Diagnostics.EventLog.Messages.dll": {
-            "rid": "win",
-            "assetType": "runtime",
-            "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.926.27113"
-          }
-        }
-      },
       "System.IdentityModel.Tokens.Jwt/8.19.1": {
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "8.19.1",
@@ -1545,7 +1535,7 @@
         "runtime": {
           "lib/netstandard2.0/xunit.abstractions.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "0.0.0.0"
+            "fileVersion": "2.0.0.0"
           }
         },
         "compile": {
@@ -3786,6 +3776,9 @@
       "Microsoft.Extensions.Primitives/10.0.9": {
         "compileOnly": true
       },
+      "System.Diagnostics.EventLog/10.0.9": {
+        "compileOnly": true
+      },
       "xunit.analyzers/1.18.0": {
         "compileOnly": true
       },
@@ -4226,13 +4219,6 @@
       "sha512": "sha512-vzB8ZAGqXus3fdareJ9GHctaRP9ZL+wW9x8U7s1Y+BWprInFvSg6rpD9VhANNpwXA8fUHqu5Agjl/+hHG1BCQA==",
       "path": "swashbuckle.aspnetcore.swaggerui/10.2.1",
       "hashPath": "swashbuckle.aspnetcore.swaggerui.10.2.1.nupkg.sha512"
-    },
-    "System.Diagnostics.EventLog/10.0.9": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-s2PcxHK4IYQ6gmD3VSBkym9tWGkFisKjcjWBdl7a+n4Yy66ae4beJ1ZdjDp060SSll4W3Rt4H2LW87dWckv+QQ==",
-      "path": "system.diagnostics.eventlog/10.0.9",
-      "hashPath": "system.diagnostics.eventlog.10.0.9.nupkg.sha512"
     },
     "System.IdentityModel.Tokens.Jwt/8.19.1": {
       "type": "package",
@@ -6096,6 +6082,13 @@
       "sha512": "sha512-fmEbAUFsaIKirgLt/lYhuFRBwhcSJN31jjHgCdbQxJiWOum6EdLjkbgGuukSP9z/a+9LibaxII/kF+GwOXgC4g==",
       "path": "microsoft.extensions.primitives/10.0.9",
       "hashPath": "microsoft.extensions.primitives.10.0.9.nupkg.sha512"
+    },
+    "System.Diagnostics.EventLog/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-s2PcxHK4IYQ6gmD3VSBkym9tWGkFisKjcjWBdl7a+n4Yy66ae4beJ1ZdjDp060SSll4W3Rt4H2LW87dWckv+QQ==",
+      "path": "system.diagnostics.eventlog/10.0.9",
+      "hashPath": "system.diagnostics.eventlog.10.0.9.nupkg.sha512"
     },
     "xunit.analyzers/1.18.0": {
       "type": "package",
