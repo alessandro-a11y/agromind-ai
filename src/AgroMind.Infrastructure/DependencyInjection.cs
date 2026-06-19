@@ -1,4 +1,5 @@
 using AgroMind.Application.Common.Interfaces;
+using AgroMind.Application.Features.Weather.Interfaces;
 using AgroMind.Infrastructure.Persistence;
 using AgroMind.Infrastructure.Services;
 using Hangfire;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AgroMind.Infrastructure.Services.Weather;
+using Resend;
 
 namespace AgroMind.Infrastructure;
 
@@ -33,12 +35,17 @@ public static class DependencyInjection
         // Serviços de domínio
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<IEmailService, EmailService>();
+services.AddSingleton<IEmailService, EmailService>();
+        services.AddScoped<ICalculateRiskService, CalculateRiskService>();
+
+        // Resend — email service
+        services.AddResend(options =>
+        options.ApiToken = configuration["Resend:ApiKey"] ?? string.Empty);
 
         // Cache em memória (TTL gerenciado por quem usa)
         services.AddMemoryCache();
 
-// Hangfire com PostgreSQL
+        // Hangfire com PostgreSQL
         services.AddHangfire(config => config
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()

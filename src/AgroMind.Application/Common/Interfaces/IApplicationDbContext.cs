@@ -13,5 +13,6 @@ public interface IApplicationDbContext
     DbSet<Diagnosis> Diagnoses { get; }
     DbSet<AuditLog> AuditLogs { get; }
 
+    DbSet<WeatherCache> WeatherCaches { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
