@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<Diagnosis> Diagnoses => Set<Diagnosis>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<WeatherCache> WeatherCaches => Set<WeatherCache>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
