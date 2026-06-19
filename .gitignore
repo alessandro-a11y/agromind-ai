@@ -6,3 +6,4 @@ appsettings.Development.json
 *.log
 logs/
 .env
+run-dev.sh
