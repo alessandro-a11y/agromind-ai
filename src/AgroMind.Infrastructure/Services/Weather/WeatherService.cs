@@ -1,56 +1,90 @@
 using System.Text.Json;
-using AgroMind.Application.Common.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
+using AgroMind.Application.Features.Weather.DTOs;
+using AgroMind.Application.Features.Weather.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace AgroMind.Infrastructure.Services.Weather;
 
-public class WeatherService : IWeatherService
+public sealed class WeatherService : IWeatherService
 {
-    private readonly HttpClient _http;
-    private readonly IMemoryCache _cache;
+    private readonly HttpClient _httpClient;
     private readonly ILogger<WeatherService> _logger;
 
-    public WeatherService(HttpClient http, IMemoryCache cache, ILogger<WeatherService> logger)
+    public WeatherService(
+        HttpClient httpClient,
+        ILogger<WeatherService> logger)
     {
-        _http = http;
-        _cache = cache;
+        _httpClient = httpClient;
         _logger = logger;
     }
 
-    public async Task<WeatherData?> GetCurrentWeatherAsync(double latitude, double longitude)
+    public async Task<WeatherDataDto?> GetCurrentWeatherAsync(
+        double latitude,
+        double longitude,
+        CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"weather:{latitude:F2}:{longitude:F2}";
-
-        if (_cache.TryGetValue(cacheKey, out WeatherData? cached))
-            return cached;
-
         try
         {
-            var url = $"https://api.open-meteo.com/v1/forecast" +
-                      $"?latitude={latitude}&longitude={longitude}" +
-                      $"&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m" +
-                      $"&timezone=America%2FSao_Paulo";
-
-            var response = await _http.GetStringAsync(url);
-            var json = JsonDocument.Parse(response);
-            var current = json.RootElement.GetProperty("current");
-
-            var data = new WeatherData(
-                Temperature: current.GetProperty("temperature_2m").GetDouble(),
-                Humidity: current.GetProperty("relative_humidity_2m").GetDouble(),
-                Precipitation: current.GetProperty("precipitation").GetDouble(),
-                WindSpeed: current.GetProperty("wind_speed_10m").GetDouble(),
-                MeasuredAt: DateTime.UtcNow
-            );
-
-            _cache.Set(cacheKey, data, TimeSpan.FromMinutes(30));
-            return data;
+            return await GetWeatherAsync(latitude, longitude, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar clima para {Lat},{Lon}", latitude, longitude);
+            _logger.LogError(
+                ex,
+                "Failed to fetch current weather for coordinates {Latitude} {Longitude}",
+                latitude,
+                longitude);
+
             return null;
         }
+    }
+
+    public async Task<WeatherDataDto> GetWeatherAsync(
+        double latitude,
+        double longitude,
+        CancellationToken cancellationToken = default)
+    {
+        var url =
+            $"https://api.open-meteo.com/v1/forecast" +
+            $"?latitude={latitude}" +
+            $"&longitude={longitude}" +
+            $"&current=temperature_2m,relative_humidity_2m,wind_speed_10m";
+
+        _logger.LogInformation(
+            "Fetching weather data for coordinates {Latitude} {Longitude}",
+            latitude,
+            longitude);
+
+        using var response =
+            await _httpClient.GetAsync(
+                url,
+                cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        await using var stream =
+            await response.Content.ReadAsStreamAsync(
+                cancellationToken);
+
+        using var document =
+            await JsonDocument.ParseAsync(
+                stream,
+                cancellationToken: cancellationToken);
+
+        var current =
+            document.RootElement.GetProperty("current");
+
+        var weather = new WeatherDataDto(
+            current.GetProperty("temperature_2m").GetDouble(),
+            current.GetProperty("relative_humidity_2m").GetDouble(),
+            current.GetProperty("wind_speed_10m").GetDouble(),
+            0,
+            DateTime.UtcNow);
+
+        _logger.LogInformation(
+            "Weather fetched successfully. Temperature {Temperature}",
+            weather.Temperature);
+
+        return weather;
     }
 }

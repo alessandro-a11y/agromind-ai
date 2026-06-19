@@ -1,11 +1,13 @@
 using AgroMind.Application.Common.Interfaces;
 using AgroMind.Application.Common.Models;
+using AgroMind.Application.Features.Weather.DTOs;
+using AgroMind.Application.Features.Weather.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AgroMind.Application.Features.Weather.Queries.GetWeather;
 
-public class GetWeatherQueryHandler : IRequestHandler<GetWeatherQuery, Result<WeatherData>>
+public class GetWeatherQueryHandler : IRequestHandler<GetWeatherQuery, Result<WeatherDataDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IWeatherService _weather;
@@ -16,7 +18,7 @@ public class GetWeatherQueryHandler : IRequestHandler<GetWeatherQuery, Result<We
         _weather = weather;
     }
 
-    public async Task<Result<WeatherData>> Handle(
+    public async Task<Result<WeatherDataDto>> Handle(
         GetWeatherQuery request,
         CancellationToken cancellationToken)
     {
@@ -24,16 +26,19 @@ public class GetWeatherQueryHandler : IRequestHandler<GetWeatherQuery, Result<We
             .FirstOrDefaultAsync(f => f.Id == request.FarmId, cancellationToken);
 
         if (farm is null)
-            return Result<WeatherData>.Fail("Fazenda não encontrada.");
+            return Result<WeatherDataDto>.Fail("Fazenda não encontrada.");
 
         if (farm.Latitude is null || farm.Longitude is null)
-            return Result<WeatherData>.Fail("Fazenda sem coordenadas cadastradas.");
+            return Result<WeatherDataDto>.Fail("Fazenda sem coordenadas cadastradas.");
 
-        var data = await _weather.GetCurrentWeatherAsync(farm.Latitude.Value, farm.Longitude.Value);
+        var data = await _weather.GetCurrentWeatherAsync(
+            farm.Latitude.Value,
+            farm.Longitude.Value,
+            cancellationToken);
 
         if (data is null)
-            return Result<WeatherData>.Fail("Não foi possível obter dados climáticos.");
+            return Result<WeatherDataDto>.Fail("Não foi possível obter dados climáticos.");
 
-        return Result<WeatherData>.Ok(data);
+        return Result<WeatherDataDto>.Ok(data);
     }
 }
