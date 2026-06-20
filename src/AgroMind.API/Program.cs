@@ -22,7 +22,7 @@ builder.Host.UseSerilog((context, services, config) =>
 
 // Camadas do projeto
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 
 builder.Services.AddControllers();
 
@@ -92,10 +92,13 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHangfireDashboard("/hangfire");
+if (!app.Environment.IsEnvironment("Testing"))
+    app.UseHangfireDashboard("/hangfire");
 
 app.MapControllers();
 app.MapHealthChecks("/api/health");
 app.MapGet("/", () => "AgroMind API rodando!");
 
 app.Run();
+
+public partial class Program { }
