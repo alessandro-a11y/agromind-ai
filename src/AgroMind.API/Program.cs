@@ -8,6 +8,10 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using System.Threading.RateLimiting;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using AgroMind.Application.Common.Telemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +75,34 @@ builder.Services.AddCors(options =>
 // Health Checks
 builder.Services.AddHealthChecks();
 // .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!) — se o pacote AspNetCore.HealthChecks.NpgSql estiver instalado
+// OpenTelemetry — Tracing e Métricas (HTTP, EF Core e métricas customizadas)
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    var otlpEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"];
+
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource.AddService(serviceName: "AgroMind.API"))
+        .WithTracing(tracing =>
+        {
+            tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddEntityFrameworkCoreInstrumentation();
+
+            if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+                tracing.AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otlpEndpoint));
+        })
+        .WithMetrics(metrics =>
+        {
+            metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddMeter(DiagnosisMetrics.MeterName);
+
+            if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+                metrics.AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otlpEndpoint));
+        });
+}
 
 var app = builder.Build();
 
