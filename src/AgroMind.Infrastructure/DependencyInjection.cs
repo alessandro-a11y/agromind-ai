@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Resend;
+using QuestPDF.Infrastructure;
 
 namespace AgroMind.Infrastructure;
 
@@ -22,6 +23,8 @@ public static class DependencyInjection
         IHostEnvironment environment)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
+
+        QuestPDF.Settings.License = LicenseType.Community;
 
         services.AddSingleton<AuditInterceptor>();
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
@@ -37,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtService, JwtService>();
         services.AddSingleton<IEmailService, EmailService>();
         services.AddScoped<ICalculateRiskService, CalculateRiskService>();
+        services.AddScoped<IDiagnosisReportService, DiagnosisReportService>();
 
         services.AddResend(options =>
             options.ApiToken = configuration["Resend:ApiKey"] ?? string.Empty);
