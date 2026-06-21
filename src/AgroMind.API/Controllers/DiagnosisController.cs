@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using AgroMind.Application.Features.Diagnosis.Commands.CreateDiagnosis;
 using AgroMind.Application.Features.Diagnosis.Queries.GetDiagnosisHistoryByField;
+using AgroMind.Application.Features.Diagnosis.Queries.GetDiagnosisHistoryReport;
+using AgroMind.Application.Features.Diagnosis.Queries.GetDiagnosisReport;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,4 +43,23 @@ public class DiagnosisController : ControllerBase
             return BadRequest(new { erro = result.Error });
         return Ok(result.Data);
     }
+
+    [HttpGet("{diagnosisId:guid}/report")]
+    public async Task<IActionResult> GetReport(Guid fieldId, Guid diagnosisId)
+    {
+        var result = await _mediator.Send(new GetDiagnosisReportQuery(fieldId, diagnosisId, UserId));
+        if (!result.Success)
+            return BadRequest(new { erro = result.Error });
+        return File(result.Data!, "application/pdf", $"diagnostico-{diagnosisId}.pdf");
+    }
+
+    [HttpGet("report")]
+    public async Task<IActionResult> GetHistoryReport(Guid fieldId)
+    {
+        var result = await _mediator.Send(new GetDiagnosisHistoryReportQuery(fieldId, UserId));
+        if (!result.Success)
+            return BadRequest(new { erro = result.Error });
+        return File(result.Data!, "application/pdf", $"historico-diagnosticos-{fieldId}.pdf");
+    }
+    
 }
