@@ -5,6 +5,7 @@ using AgroMind.Domain.Services;
 using AgroMind.Domain.Services.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using AgroMind.Application.Common.Telemetry;
 
 namespace AgroMind.Application.Features.Diagnosis.Commands.CreateDiagnosis;
 
@@ -57,6 +58,8 @@ public class CreateDiagnosisCommandHandler
             PreviousCriticalDiagnosesCount: diagnosticosCriticosRecentes);
 
         var resultado = DiagnosisEngine.Diagnose(input);
+
+        DiagnosisMetrics.RecordDiagnosis(resultado.Resultado.ToString());
 
         var diagnosis = new Domain.Entities.Diagnosis(
             field.Id, resultado.Resultado, resultado.Confianca, resultado.Recomendacao);
