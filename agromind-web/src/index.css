@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-bg: #0f1410;
+  --color-brand-surface: #1a2118;
+  --color-brand-border: #2a3528;
+  --color-brand-green: #4a7c59;
+  --color-brand-green-light: #6aab7a;
+  --color-brand-amber: #c9933a;
+  --color-brand-amber-light: #e8b05a;
+  --color-brand-text: #e8ede6;
+  --color-brand-muted: #8a9e85;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-text);
+  font-family: var(--font-sans);
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-brand-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-border);
+  border-radius: 3px;
+}
+
+.leaflet-tooltip-clean {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.leaflet-tooltip-clean::before {
+  display: none !important;
+}
+
+/* Dashboard fit */
+.dashboard-scroll {
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
