@@ -295,7 +295,7 @@ export default function Alertas() {
               <div style={{ position:'relative', width:90, height:90, flexShrink:0 }}>
                 <ResponsiveContainer width={90} height={90}>
                   <PieChart>
-                    <Pie data={pieData} cx={40} cy={40} innerRadius={28} outerRadius:={42}
+                    <Pie data={pieData} cx={40} cy={40} innerRadius={28} outerRadius={42}
                          dataKey="value" stroke="none">
                       {pieData.map((c,i) => <Cell key={i} fill={c.color}/>)}
                     </Pie>
