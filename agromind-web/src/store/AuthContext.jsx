@@ -12,7 +12,8 @@ export function AuthProvider({ children }) {
     if (!token) { setLoading(false); return }
     try {
       const { data } = await authService.me()
-      setUser(data)
+      // /api/auth/me retorna { id, email, name, role }
+      setUser({ id: data.id, name: data.name, email: data.email, role: data.role })
     } catch {
       setUser(null)
       localStorage.removeItem('accessToken')
@@ -26,6 +27,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const data = await authService.login(email, password)
+    // login retorna { accessToken, refreshToken, nome, email, role }
     setUser({ name: data.nome, email: data.email, role: data.role })
   }
 

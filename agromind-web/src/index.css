@@ -54,3 +54,23 @@ body {
   max-height: calc(100vh - 64px);
   overflow-y: auto;
 }
+
+/* Transições globais */
+button {
+  transition: opacity .15s ease, transform .15s ease, background .2s ease, border-color .2s ease, color .2s ease;
+}
+button:hover:not(:disabled) {
+  opacity: .92;
+}
+button:active:not(:disabled) {
+  transform: scale(.97);
+}
+input {
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+input:focus {
+  box-shadow: 0 0 0 3px rgba(74,124,89,.15);
+}
+a {
+  transition: color .15s ease;
+}
