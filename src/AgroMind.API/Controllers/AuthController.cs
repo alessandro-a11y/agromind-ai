@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace AgroMind.API.Controllers;
 
@@ -65,14 +66,24 @@ public class AuthController : ControllerBase
         return Ok(result.Data);
     }
 
+    /// <summary>Retorna os dados do usuário autenticado.</summary>
+    [HttpGet("me")]
+    [Authorize]
+    public IActionResult Me()
+    {
+        var id    = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        var nome  = User.FindFirstValue(ClaimTypes.Name);
+        var role  = User.FindFirstValue(ClaimTypes.Role);
+
+        return Ok(new { id, email, name = nome, role });
+    }
+
     /// <summary>Revoga o refresh token do usuário autenticado.</summary>
     [HttpPost("logout")]
     [Authorize]
-    public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+    public IActionResult Logout()
     {
-        var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken);
-        // Envia refresh inválido para forçar erro — o handler valida e rejeita
-        // Implementação real de logout via RevokeRefreshTokenCommand pode ser adicionada depois
         return NoContent();
     }
 }
@@ -81,4 +92,3 @@ public record RegisterRequest(string Nome, string Email, string Senha, UserRole 
 public record LoginRequest(string Email, string Senha);
 public record RefreshRequest(string AccessToken, string RefreshToken);
 public record LogoutRequest(string AccessToken, string RefreshToken);
-
