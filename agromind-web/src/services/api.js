@@ -2,15 +2,21 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: '/api',
-  withCredentials: true,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
+})
+
+// Injeta token em todo request
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('accessToken')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
 })
 
 let isRefreshing = false
 let failedQueue = []
 
 const processQueue = (error) => {
-  failedQueue.forEach(prom => error ? prom.reject(error) : prom.resolve())
+  failedQueue.forEach(p => error ? p.reject(error) : p.resolve())
   failedQueue = []
 }
 
@@ -27,11 +33,17 @@ api.interceptors.response.use(
       original._retry = true
       isRefreshing = true
       try {
-        await api.post('/auth/refresh')
+        const accessToken  = localStorage.getItem('accessToken')
+        const refreshToken = localStorage.getItem('refreshToken')
+        const { data } = await api.post('/auth/refresh', { accessToken, refreshToken })
+        localStorage.setItem('accessToken',  data.accessToken)
+        localStorage.setItem('refreshToken', data.refreshToken)
         processQueue(null)
         return api(original)
       } catch (e) {
         processQueue(e)
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
         window.location.href = '/login'
         return Promise.reject(e)
       } finally {
