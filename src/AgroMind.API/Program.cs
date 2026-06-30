@@ -50,13 +50,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // Rate Limiter nativo
+var isTestingEnv = builder.Environment.IsEnvironment("Testing");
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("api", opt =>
     {
         opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = 100;
-        opt.QueueLimit = 0;
+        opt.PermitLimit = isTestingEnv ? 10_000 : 100;
+        opt.QueueLimit = isTestingEnv ? 1_000 : 0;
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
     });
 });
