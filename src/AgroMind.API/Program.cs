@@ -44,6 +44,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"[JWT FAIL] Type: {context.Exception.GetType().Name}");
+                Console.WriteLine($"[JWT FAIL] Message: {context.Exception.Message}");
+                
+                if (context.Exception is SecurityTokenInvalidSignatureException)
+                    Console.WriteLine("[JWT FAIL] => CAUSA: Secret key mismatch");
+                else if (context.Exception is SecurityTokenExpiredException)
+                    Console.WriteLine("[JWT FAIL] => CAUSA: Token expirado");
+                else if (context.Exception is SecurityTokenInvalidIssuerException)
+                    Console.WriteLine($"[JWT FAIL] => CAUSA: Issuer invalido");
+                else if (context.Exception is SecurityTokenInvalidAudienceException)
+                    Console.WriteLine($"[JWT FAIL] => CAUSA: Audience invalida");
+                
+                return Task.CompletedTask;
+            }
+        };
         };
     });
 
