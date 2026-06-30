@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  NODE_VERSION: "22.x"
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # 1. Backend — Build + Unit Tests
+  # ──────────────────────────────────────────────────────────
+  backend-unit:
+    name: "Backend · Build & Unit Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore AgroMind.slnx
+
+      - name: Build (Release)
+        run: dotnet build AgroMind.slnx --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: |
+          dotnet test tests/AgroMind.UnitTests/AgroMind.UnitTests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=unit-results.trx" \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: "**/*.trx"
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: "**/coverage.cobertura.xml"
+
+  # ──────────────────────────────────────────────────────────
+  # 2. Backend — Integration Tests (Testcontainers + PostgreSQL)
+  # ──────────────────────────────────────────────────────────
+  backend-integration:
+    name: "Backend · Integration Tests"
+    runs-on: ubuntu-latest
+    needs: backend-unit
+
+    services:
+      # Docker-in-Docker não é necessário — Testcontainers usa o socket do runner
+      docker:
+        image: docker:dind
+        options: --privileged
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore AgroMind.slnx
+
+      - name: Build (Release)
+        run: dotnet build AgroMind.slnx --configuration Release --no-restore
+
+      - name: Run integration tests
+        env:
+          DOCKER_HOST: unix:///var/run/docker.sock
+          Jwt__Secret: "ci-integration-secret-key-minimo-32-chars"
+          Jwt__Issuer: "AgroMind"
+          Jwt__Audience: "AgroMindUsers"
+          Resend__ApiKey: "ci-test-key"
+        run: |
+          dotnet test tests/AgroMind.IntegrationTests/AgroMind.IntegrationTests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=integration-results.trx"
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: "**/*.trx"
+
+  # ──────────────────────────────────────────────────────────
+  # 3. Frontend — Lint + Build
+  # ──────────────────────────────────────────────────────────
+  frontend:
+    name: "Frontend · Lint & Build"
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: agromind-web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: agromind-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (production)
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: agromind-web/dist
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────
+  # 4. Gate — PR só mergeia se tudo passou
+  # ──────────────────────────────────────────────────────────
+  all-checks:
+    name: "All checks passed"
+    runs-on: ubuntu-latest
+    needs: [backend-unit, backend-integration, frontend]
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.backend-unit.result }}"        != "success" ]] || \
+             [[ "${{ needs.backend-integration.result }}" != "success" ]] || \
+             [[ "${{ needs.frontend.result }}"            != "success" ]]; then
+            echo "One or more jobs failed. Blocking merge."
+            exit 1
+          fi
+          echo "All jobs passed."

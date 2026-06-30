@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import {
-  AreaChart, Area, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, ComposedChart
+  LineChart, Line,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, ComposedChart, Bar
 } from 'recharts'
 import 'leaflet/dist/leaflet.css'
 import {

@@ -10,27 +10,12 @@ import Fazendas from './pages/Fazendas'
 import Clima from './pages/Clima'
 import Alertas from './pages/Alertas'
 import Diagnostico from './pages/Diagnostico'
-import { useEffect, useRef } from 'react'
 
 function AnimatedRoutes() {
   const location = useLocation()
-  const ref = useRef(null)
-
-  useEffect(() => {
-    if (!ref.current) return
-    ref.current.style.opacity = '0'
-    ref.current.style.transform = 'translateY(10px)'
-    const t = requestAnimationFrame(() => {
-      if (!ref.current) return
-      ref.current.style.transition = 'opacity .28s ease, transform .28s ease'
-      ref.current.style.opacity = '1'
-      ref.current.style.transform = 'translateY(0)'
-    })
-    return () => cancelAnimationFrame(t)
-  }, [location.pathname])
 
   return (
-    <div ref={ref} style={{ minHeight:'100vh' }}>
+    <div key={location.pathname} className="page-enter" style={{ minHeight:'100vh' }}>
       <Routes location={location}>
         <Route path="/login"           element={<Login />} />
         <Route path="/register"        element={<Register />} />

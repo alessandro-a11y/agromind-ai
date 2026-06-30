@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import { useAuth } from '../store/AuthContext'
 import { MapContainer, TileLayer, Polygon, Tooltip, Popup } from 'react-leaflet'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
@@ -22,7 +23,6 @@ function saudeFillColor(v) { return v>=75?'#4a7c5966':v>=50?'#c9933a66':'#c0392b
 
 const sparkSaude = [74,76,77,78,79,80,81,81,82].map(v=>({v}))
 const sparkUmid  = [68,67,66,66,65,65,65,65,65].map(v=>({v}))
-const saudeData  = [60,65,68,72,74,76,78,80,82].map(v=>({v}))
 
 const alertas = [
   { cor:'#c0392b', bg:'rgba(192,57,43,0.12)',  border:'rgba(192,57,43,0.3)',  titulo:'Baixa umidade do solo',     sub:'Talhão 12 • Soja',  time:'10 min atrás' },
@@ -86,7 +86,7 @@ function CardHeader({ title, action, actionLabel }) {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  useAuth()
 
   return (
     <div className="dashboard-scroll" style={{ display:"flex", flexDirection:"column", gap:16, padding:16 }}>

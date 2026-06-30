@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import { MapContainer, TileLayer, Polygon, Tooltip } from 'react-leaflet'
 import {
   LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, ResponsiveContainer, Tooltip as RTooltip, Legend
+  XAxis, YAxis, ResponsiveContainer, Tooltip as RTooltip
 } from 'recharts'
 import 'leaflet/dist/leaflet.css'
 import {

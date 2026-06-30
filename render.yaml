@@ -1,0 +1,89 @@
+services:
+  # ─────────────────────────────────────────────────────────
+  # Frontend (React + Vite — Static Site)
+  # ─────────────────────────────────────────────────────────
+  - type: web
+    name: agromind-frontend
+    runtime: static
+    buildCommand: cd agromind-web && npm ci && npm run build
+    staticPublishPath: agromind-web/dist
+    pullRequestPreviewsEnabled: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+
+  # ─────────────────────────────────────────────────────────
+  # Backend (ASP.NET Core API)
+  # ─────────────────────────────────────────────────────────
+  - type: web
+    name: agromind-api
+    runtime: dotnet
+    buildCommand: dotnet publish src/AgroMind.API/AgroMind.API.csproj -c Release -o /app/publish
+    startCommand: cd /app/publish && dotnet AgroMind.API.dll
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:10000
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: agromind-db
+          property: connectionString
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: AgroMind
+      - key: Jwt__Audience
+        value: AgroMindUsers
+      - key: Resend__ApiKey
+        sync: false
+      - key: FastApi__BaseUrl
+        sync: false
+      - key: FastApi__ApiKey
+        sync: false
+      - key: Serilog__WriteTo__0__Name
+        value: Console
+      - key: AllowedOrigins
+        sync: false
+
+  # ─────────────────────────────────────────────────────────
+  # FastAPI (Python — IA Service)
+  # ─────────────────────────────────────────────────────────
+  - type: web
+    name: agromind-fastapi
+    runtime: python
+    rootDir: ia-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: INTERNAL_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+
+databases:
+  # ─────────────────────────────────────────────────────────
+  # PostgreSQL
+  # ─────────────────────────────────────────────────────────
+  - name: agromind-db
+    plan: free
+    databaseName: agromind
+    user: agromind_user
+    region: ohio

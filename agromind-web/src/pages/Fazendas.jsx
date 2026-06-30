@@ -44,7 +44,7 @@ function saudeColor(v) {
 
 function MiniLine({ data, color }) {
   if (!data?.length) return <span style={{ color:'var(--color-brand-muted)', fontSize:12 }}>—</span>
-  const pts = data.map((v,i) => ({ v }))
+  const pts = data.map((v) => ({ v }))
   return (
     <ResponsiveContainer width={80} height={28}>
       <LineChart data={pts}>
