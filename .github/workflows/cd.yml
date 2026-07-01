@@ -1,18 +1,16 @@
 name: CD — Deploy to Render
 
 on:
-  push:
-    branches: [main]
   workflow_run:
-    workflows: [CI]
+    workflows: ["CI"]
     types: [completed]
     branches: [main]
 
 jobs:
   deploy:
-    name: "Deploy → Render"
+    name: "Deploy • Render"
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Trigger Render deploy — API
