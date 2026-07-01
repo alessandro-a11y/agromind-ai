@@ -1,7 +1,5 @@
 services:
-  # ─────────────────────────────────────────────────────────
   # Frontend (React + Vite — Static Site)
-  # ─────────────────────────────────────────────────────────
   - type: web
     name: agromind-frontend
     runtime: static
@@ -23,14 +21,11 @@ services:
         name: Cache-Control
         value: public, max-age=31536000, immutable
 
-  # ─────────────────────────────────────────────────────────
-  # Backend (ASP.NET Core API)
-  # ─────────────────────────────────────────────────────────
+  # Backend (ASP.NET Core API — Docker)
   - type: web
     name: agromind-api
-    runtime: dotnet
-    buildCommand: dotnet publish src/AgroMind.API/AgroMind.API.csproj -c Release -o /app/publish
-    startCommand: cd /app/publish && dotnet AgroMind.API.dll
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     plan: free
     healthCheckPath: /api/health
     envVars:
@@ -54,14 +49,10 @@ services:
         sync: false
       - key: FastApi__ApiKey
         sync: false
-      - key: Serilog__WriteTo__0__Name
-        value: Console
       - key: AllowedOrigins
         sync: false
 
-  # ─────────────────────────────────────────────────────────
   # FastAPI (Python — IA Service)
-  # ─────────────────────────────────────────────────────────
   - type: web
     name: agromind-fastapi
     runtime: python
@@ -79,9 +70,6 @@ services:
         value: production
 
 databases:
-  # ─────────────────────────────────────────────────────────
-  # PostgreSQL
-  # ─────────────────────────────────────────────────────────
   - name: agromind-db
     plan: free
     databaseName: agromind
