@@ -15,9 +15,6 @@ env:
   NODE_VERSION: "22.x"
 
 jobs:
-  # ──────────────────────────────────────────────────────────
-  # 1. Backend — Build + Unit Tests
-  # ──────────────────────────────────────────────────────────
   backend-unit:
     name: "Backend · Build & Unit Tests"
     runs-on: ubuntu-latest
@@ -60,16 +57,12 @@ jobs:
           name: coverage-report
           path: "**/coverage.cobertura.xml"
 
-  # ──────────────────────────────────────────────────────────
-  # 2. Backend — Integration Tests (Testcontainers + PostgreSQL)
-  # ──────────────────────────────────────────────────────────
   backend-integration:
     name: "Backend · Integration Tests"
     runs-on: ubuntu-latest
     needs: backend-unit
 
     services:
-      # Docker-in-Docker não é necessário — Testcontainers usa o socket do runner
       docker:
         image: docker:dind
         options: --privileged
@@ -92,10 +85,6 @@ jobs:
       - name: Run integration tests
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
-          Jwt__Secret: "ci-integration-secret-key-minimo-32-chars"
-          Jwt__Issuer: "AgroMind"
-          Jwt__Audience: "AgroMindUsers"
-          Resend__ApiKey: "ci-test-key"
         run: |
           dotnet test tests/AgroMind.IntegrationTests/AgroMind.IntegrationTests.csproj \
             --configuration Release \
@@ -109,9 +98,6 @@ jobs:
           name: integration-test-results
           path: "**/*.trx"
 
-  # ──────────────────────────────────────────────────────────
-  # 3. Frontend — Lint + Build
-  # ──────────────────────────────────────────────────────────
   frontend:
     name: "Frontend · Lint & Build"
     runs-on: ubuntu-latest
@@ -147,21 +133,20 @@ jobs:
           path: agromind-web/dist
           retention-days: 7
 
-  # ──────────────────────────────────────────────────────────
-  # 4. Gate — PR só mergeia se tudo passou
-  # ──────────────────────────────────────────────────────────
   all-checks:
     name: "All checks passed"
     runs-on: ubuntu-latest
     needs: [backend-unit, backend-integration, frontend]
     if: always()
+
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.backend-unit.result }}"        != "success" ]] || \
+          if [[ "${{ needs.backend-unit.result }}" != "success" ]] || \
              [[ "${{ needs.backend-integration.result }}" != "success" ]] || \
-             [[ "${{ needs.frontend.result }}"            != "success" ]]; then
+             [[ "${{ needs.frontend.result }}" != "success" ]]; then
             echo "One or more jobs failed. Blocking merge."
             exit 1
           fi
+
           echo "All jobs passed."
