@@ -6,10 +6,8 @@ export default function PrivateRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen"
-           style={{ background: 'var(--color-brand-bg)' }}>
-        <div className="w-6 h-6 border-2 rounded-full animate-spin"
-             style={{ borderColor: 'var(--color-brand-green)', borderTopColor: 'transparent' }} />
+      <div className="flex h-screen items-center justify-center bg-canvas">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     )
   }

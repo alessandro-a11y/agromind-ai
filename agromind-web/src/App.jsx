@@ -1,36 +1,23 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './store/AuthContext'
 import PrivateRoute from './components/layout/PrivateRoute'
 import AppLayout from './components/layout/AppLayout'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import ForgotPassword from './pages/ForgotPassword'
-import Dashboard from './pages/Dashboard'
-import Fazendas from './pages/Fazendas'
-import Clima from './pages/Clima'
-import Alertas from './pages/Alertas'
-import Diagnostico from './pages/Diagnostico'
-import Chat from './pages/Chat'
 
-function AnimatedRoutes() {
-  const location = useLocation()
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Fazendas = lazy(() => import('./pages/Fazendas'))
+const Clima = lazy(() => import('./pages/Clima'))
+const Alertas = lazy(() => import('./pages/Alertas'))
+const Diagnostico = lazy(() => import('./pages/Diagnostico'))
+const Chat = lazy(() => import('./pages/Chat'))
 
+function LoadingScreen() {
   return (
-    <div key={location.pathname} className="page-enter" style={{ minHeight:'100vh' }}>
-      <Routes location={location}>
-        <Route path="/login"           element={<Login />} />
-        <Route path="/register"        element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-          <Route path="/dashboard"   element={<Dashboard />} />
-          <Route path="/fazendas"    element={<Fazendas />} />
-          <Route path="/clima"       element={<Clima />} />
-          <Route path="/alertas"     element={<Alertas />} />
-          <Route path="/diagnostico" element={<Diagnostico />} />
-          <Route path="/chat"        element={<Chat />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+    <div className="flex h-screen items-center justify-center bg-canvas">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
     </div>
   )
 }
@@ -39,7 +26,22 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AnimatedRoutes />
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/fazendas" element={<Fazendas />} />
+              <Route path="/clima" element={<Clima />} />
+              <Route path="/alertas" element={<Alertas />} />
+              <Route path="/diagnostico" element={<Diagnostico />} />
+              <Route path="/chat" element={<Chat />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   )
