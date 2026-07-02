@@ -4,6 +4,7 @@ using AgroMind.Domain.Enums;
 using AgroMind.Domain.Services;
 using AgroMind.Domain.Services.Models;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using AgroMind.Application.Common.Telemetry;
 
@@ -13,10 +14,17 @@ public class CreateDiagnosisCommandHandler
     : IRequestHandler<CreateDiagnosisCommand, Result<DiagnosisResponse>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAiDiagnosisService _aiDiagnosisService;
+    private readonly ILogger<CreateDiagnosisCommandHandler> _logger;
 
-    public CreateDiagnosisCommandHandler(IApplicationDbContext context)
+    public CreateDiagnosisCommandHandler(
+        IApplicationDbContext context,
+        IAiDiagnosisService aiDiagnosisService,
+        ILogger<CreateDiagnosisCommandHandler> logger)
     {
         _context = context;
+        _aiDiagnosisService = aiDiagnosisService;
+        _logger = logger;
     }
 
     public async Task<Result<DiagnosisResponse>> Handle(
@@ -57,7 +65,26 @@ public class CreateDiagnosisCommandHandler
             RainProbability: weather?.RainProbability ?? 20,
             PreviousCriticalDiagnosesCount: diagnosticosCriticosRecentes);
 
-        var resultado = DiagnosisEngine.Diagnose(input);
+        var aiRequest = new AiDiagnosisRequest(
+            input.CropName,
+            input.SoilPh,
+            input.Temperature,
+            input.Humidity,
+            input.WindSpeed,
+            input.RainProbability,
+            input.PreviousCriticalDiagnosesCount);
+
+        var aiOutcome = await _aiDiagnosisService.DiagnoseAsync(aiRequest, cancellationToken);
+        var resultado = aiOutcome.Success && aiOutcome.Diagnosis is not null
+            ? MapAiResult(aiOutcome.Diagnosis)
+            : DiagnosisEngine.Diagnose(input);
+
+        if (!aiOutcome.Success)
+        {
+            _logger.LogWarning(
+                "Using local diagnosis engine because AI diagnosis failed: {Reason}",
+                aiOutcome.ErrorMessage);
+        }
 
         DiagnosisMetrics.RecordDiagnosis(resultado.Resultado.ToString());
 
@@ -69,5 +96,16 @@ public class CreateDiagnosisCommandHandler
 
         return Result<DiagnosisResponse>.Ok(new DiagnosisResponse(
             diagnosis.Id, diagnosis.Resultado, diagnosis.Confianca, diagnosis.Recomendacao, diagnosis.CreatedAt));
+    }
+
+    private static DiagnosisResult MapAiResult(AiDiagnosisResult result)
+    {
+        var recommendations = string.Join(" ", result.Recommendations);
+        var recommendation = $"{result.Diagnosis} Recomendações: {recommendations}";
+
+        return new DiagnosisResult(
+            result.RiskLevel,
+            Math.Clamp(result.Confidence, 0, 1),
+            recommendation);
     }
 }

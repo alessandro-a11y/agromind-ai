@@ -10,6 +10,7 @@ import Fazendas from './pages/Fazendas'
 import Clima from './pages/Clima'
 import Alertas from './pages/Alertas'
 import Diagnostico from './pages/Diagnostico'
+import Chat from './pages/Chat'
 
 function AnimatedRoutes() {
   const location = useLocation()
@@ -26,6 +27,7 @@ function AnimatedRoutes() {
           <Route path="/clima"       element={<Clima />} />
           <Route path="/alertas"     element={<Alertas />} />
           <Route path="/diagnostico" element={<Diagnostico />} />
+          <Route path="/chat"        element={<Chat />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import {
   Leaf, LayoutDashboard, Map, CloudSun,
-  TriangleAlert, ClipboardList, LogOut, Menu, X
+  TriangleAlert, ClipboardList, LogOut, Menu, X, Bot
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -12,6 +12,7 @@ const nav = [
   { to: '/clima',        icon: CloudSun,        label: 'Clima'        },
   { to: '/alertas',      icon: TriangleAlert,   label: 'Alertas'      },
   { to: '/diagnostico',  icon: ClipboardList,   label: 'Diagnóstico'  },
+  { to: '/chat',         icon: Bot,             label: 'Assistente'   },
 ]
 
 export default function Sidebar() {

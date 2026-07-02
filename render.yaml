@@ -49,6 +49,8 @@ services:
         sync: false
       - key: FastApi__ApiKey
         sync: false
+      - key: FastApi__TimeoutSeconds
+        value: 30
       - key: AllowedOrigins
         sync: false
 
@@ -62,8 +64,14 @@ services:
     plan: free
     healthCheckPath: /health
     envVars:
-      - key: ANTHROPIC_API_KEY
+      - key: GROQ_API_KEY
         sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: GROQ_TEMPERATURE
+        value: 0.2
+      - key: GROQ_TIMEOUT_SECONDS
+        value: 30
       - key: INTERNAL_API_KEY
         sync: false
       - key: ENVIRONMENT

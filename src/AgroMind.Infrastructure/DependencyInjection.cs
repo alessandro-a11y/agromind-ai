@@ -2,6 +2,7 @@ using AgroMind.Application.Common.Interfaces;
 using AgroMind.Application.Features.Weather.Interfaces;
 using AgroMind.Infrastructure.Persistence;
 using AgroMind.Infrastructure.Services;
+using AgroMind.Infrastructure.Services.Ai;
 using AgroMind.Infrastructure.Services.Weather;
 using Hangfire;
 using Hangfire.InMemory;
@@ -41,6 +42,7 @@ public static class DependencyInjection
         services.AddSingleton<IEmailService, EmailService>();
         services.AddScoped<ICalculateRiskService, CalculateRiskService>();
         services.AddScoped<IDiagnosisReportService, DiagnosisReportService>();
+        services.Configure<FastApiOptions>(configuration.GetSection("FastApi"));
 
         services.AddResend(options =>
             options.ApiToken = configuration["Resend:ApiKey"] ?? string.Empty);
@@ -73,6 +75,32 @@ public static class DependencyInjection
         });
 
         services.AddHttpClient<IWeatherService, WeatherService>();
+        services.AddHttpClient<IAiDiagnosisService, FastApiDiagnosisService>((_, client) =>
+        {
+            var baseUrl = configuration["FastApi:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+                client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+
+            var timeoutSeconds = configuration.GetValue("FastApi:TimeoutSeconds", 30);
+            client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+        });
+        services.AddHttpClient<IAiChatService, FastApiChatService>((_, client) =>
+        {
+            var baseUrl = configuration["FastApi:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+                client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+
+            var timeoutSeconds = configuration.GetValue("FastApi:TimeoutSeconds", 30);
+            client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+        });
+        services.AddHttpClient("FastApiHealth", client =>
+        {
+            var baseUrl = configuration["FastApi:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+                client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }

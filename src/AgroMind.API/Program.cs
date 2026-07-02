@@ -12,6 +12,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using AgroMind.Application.Common.Telemetry;
+using AgroMind.Infrastructure.Services.Ai;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,7 +95,8 @@ builder.Services.AddCors(options =>
 });
 
 // Health Checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck<FastApiHealthCheck>("fastapi");
 // .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!) — se o pacote AspNetCore.HealthChecks.NpgSql estiver instalado
 // OpenTelemetry — Tracing e Métricas (HTTP, EF Core e métricas customizadas)
 if (!builder.Environment.IsEnvironment("Testing"))

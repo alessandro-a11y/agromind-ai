@@ -64,7 +64,7 @@ flowchart TB
     end
 
     subgraph AIService["🤖 FastAPI — IA Service"]
-        CLAUDE[Claude API — Assistente]
+        GROQ[Groq API — Assistente]
         ML[scikit-learn — Previsão]
     end
 
@@ -117,7 +117,7 @@ sequenceDiagram
 | Sprint 3 | Scheduler + Alertas (Hangfire + SendGrid) | ✅ Concluído |
 | Sprint 4 | Motor Agronômico (Engine + PDF + OpenTelemetry) | ✅ Concluído |
 | Sprint 5 | Frontend + Deploy (React + Render + CI/CD) | ✅ Concluído |
-| Sprint 6 | IA + ML (FastAPI + Claude + scikit-learn) | 🔄 Em andamento |
+| Sprint 6 | IA + ML (FastAPI + Groq + scikit-learn) | 🔄 Em andamento |
 
 ---
 
@@ -151,8 +151,8 @@ sequenceDiagram
 | Tecnologia | Uso |
 |-----------|-----|
 | FastAPI | API Python para serviço de IA |
-| Claude API (Anthropic) | Assistente agrícola conversacional |
-| scikit-learn | Previsão de produtividade |
+| Groq API | Assistente agrícola conversacional e diagnóstico IA |
+| scikit-learn | Previsão de produtividade, pronto para receber modelo treinado |
 
 ### Infraestrutura
 | Tecnologia | Uso |
@@ -238,6 +238,16 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
+Variáveis principais:
+
+```bash
+GROQ_API_KEY=sua_chave_groq
+GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_TEMPERATURE=0.2
+GROQ_TIMEOUT_SECONDS=30
+INTERNAL_API_KEY=mesma_chave_configurada_no_aspnet
+```
+
 ---
 
 ## 🚀 Deploy
@@ -302,11 +312,11 @@ agromind-ai/
 │   └── AgroMind.IntegrationTests/ # Testes integração (Testcontainers)
 ├── agromind-web/           # Frontend React + Vite
 │   └── src/
-│       ├── pages/          # Dashboard, Fazendas, Clima, Alertas, Diagnóstico
+│       ├── pages/          # Dashboard, Fazendas, Clima, Alertas, Diagnóstico, Chat
 │       ├── components/     # Layout, Map, Charts, UI
 │       ├── services/       # API client (axios + interceptors)
 │       └── store/          # AuthContext
-├── ia-service/             # FastAPI + Claude + scikit-learn
+├── ia-service/             # FastAPI + Groq + scikit-learn
 ├── render.yaml             # Configuração de deploy (IaC)
 ├── docker-compose.yml      # Ambiente local (PG + pgAdmin + Seq)
 └── AgroMind.slnx           # Solution .NET
