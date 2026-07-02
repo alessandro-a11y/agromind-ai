@@ -3,21 +3,23 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-canvas: #f5f7f4;
-  --color-surface: #ffffff;
-  --color-surface-muted: #f0f4ef;
-  --color-border: #dde5da;
-  --color-ink: #142018;
-  --color-muted: #647266;
-  --color-primary: #256f49;
-  --color-primary-strong: #185739;
-  --color-primary-soft: #e6f2ea;
-  --color-info: #256d8f;
-  --color-info-soft: #e6f3f8;
-  --color-warning: #a66812;
-  --color-warning-soft: #fff3dc;
-  --color-danger: #b42318;
-  --color-danger-soft: #fde8e5;
+  --color-canvas: #060b08;
+  --color-surface: #101714;
+  --color-surface-muted: #171f1c;
+  --color-border: #24312b;
+  --color-ink: #f5f8f3;
+  --color-muted: #9fb0a0;
+  --color-primary: #4fe288;
+  --color-primary-strong: #2fd26c;
+  --color-primary-soft: rgba(79, 226, 136, 0.16);
+  --color-info: #66c8ff;
+  --color-info-soft: rgba(102, 200, 255, 0.16);
+  --color-warning: #ffbb5c;
+  --color-warning-soft: rgba(255, 187, 92, 0.18);
+  --color-danger: #ff6b6b;
+  --color-danger-soft: rgba(255, 107, 107, 0.16);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.24);
+  --shadow-strong: 0 20px 50px rgba(0, 0, 0, 0.32);
 }
 
 * { box-sizing: border-box; }
@@ -25,14 +27,25 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
   min-width: 320px;
-  background: #f5f7f4;
-  color: #142018;
+  background: radial-gradient(ellipse at top left, rgba(79, 226, 136, 0.08), transparent 50%), linear-gradient(135deg, #0a0e0b 0%, #0f1410 50%, #0a0e0b 100%);
+  color: #f0f5f2;
   font-family: var(--font-sans);
+  transition: background-color .3s ease, color .3s ease;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(79, 226, 136, 0.24);
+  color: #f5f8f3;
 }
 
 button,
@@ -56,7 +69,7 @@ button {
 }
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -68,11 +81,38 @@ button {
   100% { transform: translateX(100%); }
 }
 
-.page-enter { animation: pageIn .22s ease-out both; }
+@keyframes dashboardFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter { animation: pageIn .28s cubic-bezier(.22, 1, .36, 1) both; will-change: transform, opacity; }
+
+.dashboard-card {
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-strong);
+  border-color: rgba(79, 226, 136, 0.28);
+}
+
+.nav-pill {
+  transition: transform .2s ease, background-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+.nav-pill:hover {
+  transform: translateY(-1px);
+}
+
+.dashboard-fade-in {
+  animation: dashboardFade .32s ease-out both;
+}
 
 .leaflet-container {
   font-family: var(--font-sans);
-  background: #dfe7dc;
+  background: #0f1410;
 }
 
 .leaflet-tooltip-clean {

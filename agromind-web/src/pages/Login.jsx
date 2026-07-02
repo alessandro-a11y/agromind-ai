@@ -54,10 +54,10 @@ export default function Login() {
         </div>
       </section>
 
-      <main className="flex items-center justify-center p-5">
-        <Card className="w-full max-w-md p-6 md:p-8">
+      <main className="flex items-center justify-center bg-[radial-gradient(circle_at_top_right,_rgba(79,226,136,0.12),_transparent_50%),linear-gradient(135deg,#0a0e0b_0%,#0f1410_100%)] p-5">
+        <Card className="w-full max-w-md overflow-hidden rounded-2xl border border-border p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] md:p-8">
           <div className="mb-8">
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-primary-soft text-primary"><ShieldCheck size={22} /></div>
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/30 to-primary-strong/20 text-primary"><ShieldCheck size={24} /></div>
             <h2 className="text-2xl font-extrabold text-ink">Entrar</h2>
             <p className="mt-2 text-sm text-muted">Acesse o painel operacional da sua organização.</p>
           </div>

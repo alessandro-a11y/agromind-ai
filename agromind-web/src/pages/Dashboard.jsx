@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MapContainer, Polygon, TileLayer, Tooltip } from 'react-leaflet'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts'
-import { Activity, AlertTriangle, ArrowRight, Home, MapPin, RefreshCw, Sprout } from 'lucide-react'
+import { Activity, AlertTriangle, ArrowRight, Home, MapPin, RefreshCw, Sparkles, Sprout, TrendingUp } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import { agromindService } from '../services/agromind'
 import { useAsync } from '../hooks/useAsync'
@@ -30,7 +30,7 @@ function KpiCard({ icon: Icon, label, value, detail, loading, tone = 'primary' }
   }
 
   return (
-    <Card className="p-4">
+    <Card className="dashboard-card dashboard-fade-in p-4">
       {loading ? (
         <>
           <Skeleton className="mb-3 h-4 w-28" />
@@ -40,10 +40,10 @@ function KpiCard({ icon: Icon, label, value, detail, loading, tone = 'primary' }
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-muted">{label}</p>
-            <p className="mt-2 text-3xl font-extrabold text-ink">{value}</p>
+            <p className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-ink">{value}</p>
             <p className="mt-1 text-xs text-muted">{detail}</p>
           </div>
-          <div className={`flex h-11 w-11 items-center justify-center rounded-md ${colors[tone]}`}>
+          <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colors[tone]}`}>
             <Icon size={21} />
           </div>
         </div>
@@ -80,16 +80,21 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-primary">Centro de operações</p>
-          <h1 className="mt-1 text-2xl font-extrabold tracking-normal text-ink">Panorama operacional</h1>
-          <p className="mt-1 text-sm text-muted">Fazendas, clima, alertas e saúde das áreas em uma visão executiva.</p>
+      <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-surface via-surface to-surface-muted p-6 shadow-[0_16px_48px_rgba(79,226,136,0.1)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary-soft/50 px-3 py-1.5 text-sm font-semibold text-primary">
+              <Sparkles size={14} />
+              Centro de operações
+            </div>
+            <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.03em] text-ink">Panorama operacional</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted">Fazendas, clima, alertas e saúde das áreas em uma visão executiva e preparada para decisão.</p>
+          </div>
+          <Button variant="secondary" onClick={refreshAll}>
+            <RefreshCw size={16} /> Atualizar
+          </Button>
         </div>
-        <Button variant="secondary" onClick={refreshAll}>
-          <RefreshCw size={16} /> Atualizar
-        </Button>
-      </div>
+      </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard loading={dashboard.loading} icon={Home} label="Fazendas" value={stats.totalFazendas} detail="propriedades cadastradas" />
@@ -100,13 +105,13 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1.35fr_.65fr]">
-        <Card className="overflow-hidden">
+        <Card className="dashboard-card overflow-hidden">
           <CardHeader
             title="Mapa de saúde dos talhões"
             eyebrow="GIS operacional"
             action={<Link to="/fazendas" className="text-sm font-semibold text-primary hover:text-primary-strong">Ver fazendas</Link>}
           />
-          <div className="h-[420px]">
+          <div className="h-[420px] p-3">
             <MapContainer center={[-24.038, -52.373]} zoom={12} className="h-full w-full" zoomControl>
               <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="Esri, Maxar" />
               {fieldShapes.map(field => (
@@ -127,14 +132,14 @@ export default function Dashboard() {
         </Card>
 
         <div className="space-y-5">
-          <Card>
+          <Card className="dashboard-card">
             <CardHeader title="Alertas prioritários" eyebrow="Fila de risco" action={<Link to="/alertas" className="text-sm font-semibold text-primary">Abrir</Link>} />
             <div className="space-y-2 p-4">
               {alerts.loading ? (
                 Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-14" />)
               ) : activeAlerts.length ? (
                 activeAlerts.map(alert => (
-                  <div key={alert.id} className="rounded-md border border-border bg-surface-muted p-3">
+                  <div key={alert.id} className="rounded-xl border border-border bg-surface-muted p-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-bold text-ink">{alert.tipoLabel ?? 'Alerta'}</p>
@@ -155,7 +160,7 @@ export default function Dashboard() {
             <CardHeader title="Recomendações" eyebrow="Ações sugeridas" />
             <div className="divide-y divide-border">
               {recommendations.map(item => (
-                <div key={item.title} className="p-4">
+                <div key={item.title} className="p-4 transition-colors duration-200 hover:bg-surface-muted/70">
                   <p className="text-sm font-bold text-ink">{item.title}</p>
                   <p className="mt-1 text-sm text-muted">{item.text}</p>
                 </div>
@@ -166,23 +171,26 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="dashboard-card lg:col-span-2">
           <CardHeader title="Tendência dos indicadores" eyebrow="Últimos 30 dias" />
           <div className="h-72 p-4">
             <ResponsiveContainer>
-              <AreaChart data={healthTrend}>
+              <AreaChart data={healthTrend} margin={{ top: 6, right: 8, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="health" x1="0" x2="0" y1="0" y2="1">
                     <stop offset="5%" stopColor="#256f49" stopOpacity={0.28} />
                     <stop offset="95%" stopColor="#256f49" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#e6ece3" vertical={false} />
+                <CartesianGrid stroke="#e6ece3" vertical={false} strokeDasharray="4 4" />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
-                <ChartTooltip />
-                <Area type="monotone" dataKey="health" name="Saúde" stroke="#256f49" fill="url(#health)" strokeWidth={2} />
-                <Area type="monotone" dataKey="water" name="Umidade" stroke="#256d8f" fill="#256d8f22" strokeWidth={2} />
+                <ChartTooltip
+                  cursor={{ stroke: '#256f49', strokeWidth: 1, strokeDasharray: '4 4' }}
+                  contentStyle={{ borderRadius: 12, borderColor: '#dde5da', boxShadow: '0 10px 24px rgba(20,32,24,0.08)' }}
+                />
+                <Area type="monotone" dataKey="health" name="Saúde" stroke="#256f49" fill="url(#health)" strokeWidth={2.5} />
+                <Area type="monotone" dataKey="water" name="Umidade" stroke="#256d8f" fill="#256d8f22" strokeWidth={2.2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -193,7 +201,7 @@ export default function Dashboard() {
           <div className="flex h-72 items-center gap-4 p-4">
             <ResponsiveContainer width="48%" height="100%">
               <PieChart>
-                <Pie data={cropMix} innerRadius={48} outerRadius={74} dataKey="value" stroke="none">
+                <Pie data={cropMix} innerRadius={48} outerRadius={74} dataKey="value" stroke="none" paddingAngle={2}>
                   {cropMix.map(item => <Cell key={item.name} fill={item.color} />)}
                 </Pie>
               </PieChart>
@@ -215,11 +223,14 @@ export default function Dashboard() {
         <CardHeader title="Clima semanal" eyebrow="Precipitação e temperatura" action={<Link to="/clima" className="inline-flex items-center gap-1 text-sm font-semibold text-primary">Detalhes <ArrowRight size={14} /></Link>} />
         <div className="h-64 p-4">
           <ResponsiveContainer>
-            <BarChart data={weatherSeries}>
-              <CartesianGrid stroke="#e6ece3" vertical={false} />
+            <BarChart data={weatherSeries} margin={{ top: 6, right: 8, left: -10, bottom: 0 }}>
+              <CartesianGrid stroke="#e6ece3" vertical={false} strokeDasharray="4 4" />
               <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
-              <ChartTooltip />
+              <ChartTooltip
+                cursor={{ fill: 'rgba(37,111,73,0.06)' }}
+                contentStyle={{ borderRadius: 12, borderColor: '#dde5da', boxShadow: '0 10px 24px rgba(20,32,24,0.08)' }}
+              />
               <Bar dataKey="rain" name="Chuva (mm)" fill="#256d8f" radius={[4, 4, 0, 0]} />
               <Bar dataKey="temp" name="Temperatura (C)" fill="#a66812" radius={[4, 4, 0, 0]} />
             </BarChart>

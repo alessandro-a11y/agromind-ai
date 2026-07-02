@@ -2,10 +2,10 @@ import { AlertCircle, CheckCircle2, Loader2, Search } from 'lucide-react'
 
 export function Button({ variant = 'primary', size = 'md', className = '', loading, children, ...props }) {
   const variants = {
-    primary: 'bg-primary text-white hover:bg-primary-strong shadow-sm',
-    secondary: 'bg-surface text-ink border border-border hover:bg-surface-muted',
+    primary: 'bg-gradient-to-br from-primary to-primary-strong text-slate-950 hover:from-primary-strong hover:to-primary shadow-[0_12px_32px_rgba(79,226,136,0.28)]',
+    secondary: 'bg-surface text-ink border border-border hover:bg-surface-muted hover:shadow-[0_8px_20px_rgba(0,0,0,0.3)]',
     ghost: 'bg-transparent text-muted hover:bg-surface-muted hover:text-ink',
-    danger: 'bg-danger text-white hover:bg-red-800',
+    danger: 'bg-danger text-white hover:from-red-600 hover:to-red-700 shadow-[0_12px_32px_rgba(255,107,107,0.28)]',
   }
   const sizes = {
     sm: 'h-8 px-3 text-xs',
@@ -15,7 +15,7 @@ export function Button({ variant = 'primary', size = 'md', className = '', loadi
 
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-55 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={loading || props.disabled}
       {...props}
     >
@@ -27,7 +27,7 @@ export function Button({ variant = 'primary', size = 'md', className = '', loadi
 
 export function Card({ children, className = '' }) {
   return (
-    <section className={`rounded-lg border border-border bg-surface shadow-sm ${className}`}>
+    <section className={`rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.5)] transition-shadow duration-300 ${className}`}>
       {children}
     </section>
   )
@@ -35,10 +35,10 @@ export function Card({ children, className = '' }) {
 
 export function CardHeader({ title, eyebrow, action, className = '' }) {
   return (
-    <div className={`flex items-start justify-between gap-3 border-b border-border px-4 py-3 ${className}`}>
+    <div className={`flex items-start justify-between gap-3 border-b border-border/50 px-6 py-5 ${className}`}>
       <div>
-        {eyebrow && <p className="text-xs font-medium text-muted">{eyebrow}</p>}
-        <h2 className="text-sm font-bold text-ink">{title}</h2>
+        {eyebrow && <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-muted">{eyebrow}</p>}
+        <h2 className="mt-1.5 text-base font-bold text-ink">{title}</h2>
       </div>
       {action}
     </div>
@@ -53,7 +53,7 @@ export function Badge({ tone = 'neutral', children }) {
     danger: 'bg-danger-soft text-danger',
     info: 'bg-info-soft text-info',
   }
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]}`}>{children}</span>
+  return <span className={`inline-flex rounded-full border border-transparent px-2.5 py-1 text-xs font-semibold shadow-sm ${tones[tone]}`}>{children}</span>
 }
 
 export function Field({ label, error, children }) {
@@ -69,7 +69,7 @@ export function Field({ label, error, children }) {
 export function Input({ className = '', ...props }) {
   return (
     <input
-      className={`h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 ${className}`}
+      className={`h-10 w-full rounded-lg border border-border bg-surface-muted px-3.5 text-sm text-ink outline-none transition placeholder:text-slate-500 focus:border-primary focus:ring-4 focus:ring-primary/15 ${className}`}
       {...props}
     />
   )
@@ -78,7 +78,7 @@ export function Input({ className = '', ...props }) {
 export function Select({ className = '', children, ...props }) {
   return (
     <select
-      className={`h-10 rounded-md border border-border bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 ${className}`}
+      className={`h-10 rounded-lg border border-border bg-surface-muted px-3.5 text-sm font-medium text-ink outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15 ${className}`}
       {...props}
     >
       {children}
@@ -115,7 +115,7 @@ export function Toast({ message, tone = 'success', onClose }) {
   const Icon = tone === 'success' ? CheckCircle2 : AlertCircle
   const color = tone === 'success' ? 'text-primary' : 'text-danger'
   return (
-    <div className="fixed bottom-5 right-5 z-[1000] flex max-w-sm items-center gap-3 rounded-lg border border-border bg-white px-4 py-3 text-sm text-ink shadow-xl">
+    <div className="fixed bottom-5 right-5 z-[1000] flex max-w-sm items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-ink shadow-2xl">
       <Icon size={18} className={color} />
       <span className="flex-1">{message}</span>
       <button onClick={onClose} className="text-muted hover:text-ink">Fechar</button>
@@ -126,8 +126,8 @@ export function Toast({ message, tone = 'success', onClose }) {
 export function Modal({ open, title, children, footer, onClose }) {
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-[900] flex items-center justify-center bg-slate-950/35 p-4">
-      <div className="w-full max-w-xl rounded-lg border border-border bg-white shadow-2xl">
+    <div className="fixed inset-0 z-[900] flex items-center justify-center bg-slate-950/55 p-4">
+      <div className="w-full max-w-xl rounded-2xl border border-border bg-surface shadow-2xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-base font-bold text-ink">{title}</h2>
           <button onClick={onClose} className="rounded-md px-2 py-1 text-sm text-muted hover:bg-surface-muted hover:text-ink">Esc</button>

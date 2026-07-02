@@ -30,10 +30,10 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas p-5">
-      <Card className="w-full max-w-lg p-6 md:p-8">
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_right,_rgba(79,226,136,0.12),_transparent_50%),linear-gradient(135deg,#0a0e0b_0%,#0f1410_100%)] p-5">
+      <Card className="w-full max-w-lg overflow-hidden rounded-2xl border border-border p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] md:p-8">
         <div className="mb-8">
-          <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-primary-soft text-primary"><Leaf size={22} /></div>
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/30 to-primary-strong/20 text-primary"><Leaf size={24} /></div>
           <h1 className="text-2xl font-extrabold text-ink">Criar conta</h1>
           <p className="mt-2 text-sm text-muted">Cadastre um usuário para acessar a plataforma AgroMind.</p>
         </div>
