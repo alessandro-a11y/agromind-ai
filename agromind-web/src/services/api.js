@@ -20,11 +20,33 @@ const processQueue = (error) => {
   failedQueue = []
 }
 
+const clearSession = () => {
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('refreshToken')
+}
+
+const isAuthEndpoint = url =>
+  url?.includes('/auth/login') ||
+  url?.includes('/auth/register') ||
+  url?.includes('/auth/refresh')
+
 api.interceptors.response.use(
   res => res,
   async err => {
     const original = err.config
+    if (!original || isAuthEndpoint(original.url)) {
+      return Promise.reject(err)
+    }
+
     if (err.response?.status === 401 && !original._retry) {
+      const accessToken  = localStorage.getItem('accessToken')
+      const refreshToken = localStorage.getItem('refreshToken')
+
+      if (!accessToken || !refreshToken) {
+        clearSession()
+        return Promise.reject(err)
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
@@ -33,8 +55,6 @@ api.interceptors.response.use(
       original._retry = true
       isRefreshing = true
       try {
-        const accessToken  = localStorage.getItem('accessToken')
-        const refreshToken = localStorage.getItem('refreshToken')
         const { data } = await api.post('/auth/refresh', { accessToken, refreshToken })
         localStorage.setItem('accessToken',  data.accessToken)
         localStorage.setItem('refreshToken', data.refreshToken)
@@ -42,9 +62,10 @@ api.interceptors.response.use(
         return api(original)
       } catch (e) {
         processQueue(e)
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
+        clearSession()
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
         return Promise.reject(e)
       } finally {
         isRefreshing = false

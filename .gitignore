@@ -28,6 +28,7 @@ yarn-error.log*
 __pycache__/
 *.py[cod]
 *$py.class
+ia-service/*.pkl
 .pytest_cache/
 .coverage
 htmlcov/
