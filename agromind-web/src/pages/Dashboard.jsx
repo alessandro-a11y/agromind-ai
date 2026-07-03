@@ -1,244 +1,345 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { MapContainer, Polygon, TileLayer, Tooltip } from 'react-leaflet'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts'
-import { Activity, AlertTriangle, ArrowRight, Home, MapPin, RefreshCw, Sparkles, Sprout, TrendingUp } from 'lucide-react'
+import { MapContainer, Marker, Polygon, TileLayer, ZoomControl } from 'react-leaflet'
+import { renderToStaticMarkup } from 'react-dom/server'
+import L from 'leaflet'
+import {
+  AlertTriangle,
+  ArrowRight,
+  ChevronRight,
+  CloudSun,
+  Droplet,
+  Thermometer,
+  Leaf,
+  Sprout,
+  Tractor,
+  CloudRain,
+  Sun,
+  Cloud
+} from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
-import { agromindService } from '../services/agromind'
-import { useAsync } from '../hooks/useAsync'
-import { cropMix, fallbackFarms, fieldShapes, healthTrend, recommendations, weatherSeries } from '../data/operations'
-import { Badge, Button, Card, CardHeader, EmptyState, Skeleton, Toast } from '../components/ui/Primitives'
 
-const statusTone = status => {
-  if ((status ?? '').toLowerCase().includes('alert')) return 'danger'
-  if ((status ?? '').toLowerCase().includes('attention')) return 'warning'
-  return 'success'
+const fieldShapes = [
+  { id: 3,  nome: 'Talhão 3',  coords: [[-24.150, -52.505], [-24.148, -52.494], [-24.156, -52.491], [-24.159, -52.502]], healthIndex: 88, color: '#15803d' },
+  { id: 5,  nome: 'Talhão 5',  coords: [[-24.148, -52.494], [-24.146, -52.483], [-24.153, -52.480], [-24.156, -52.491]], healthIndex: 80, color: '#4d7c0f' },
+  { id: 7,  nome: 'Talhão 7',  coords: [[-24.159, -52.502], [-24.156, -52.491], [-24.163, -52.489], [-24.166, -52.500]], healthIndex: 62, color: '#a16207' },
+  { id: 12, nome: 'Talhão 12', coords: [[-24.156, -52.491], [-24.153, -52.480], [-24.160, -52.478], [-24.163, -52.489]], healthIndex: 38, color: '#b91c1c' },
+  { id: 8,  nome: 'Talhão 8',  coords: [[-24.166, -52.500], [-24.163, -52.489], [-24.170, -52.487], [-24.173, -52.498]], healthIndex: 90, color: '#15803d' },
+]
+
+const recentActivities = [
+  { id: 1, title: 'Plantio concluído no Talhão 8', desc: 'Soja • 120 ha', time: 'Hoje, 08:45', icon: Sprout, iconColor: 'text-[#22c55e]' },
+  { id: 2, title: 'Aplicação realizada no Talhão 12', desc: 'Fungicida • 45 ha', time: 'Hoje, 07:30', icon: Tractor, iconColor: 'text-[#eab308]' },
+  { id: 3, title: 'Colheita iniciada no Talhão 5', desc: 'Milho • 80 ha', time: 'Ontem, 16:10', icon: Leaf, iconColor: 'text-[#3b82f6]' },
+  { id: 4, title: 'Irrigação programada no Talhão 3', desc: 'Algodão • 60 ha', time: '22/06/2026', icon: Droplet, iconColor: 'text-[#3b82f6]' }
+]
+
+const activeAlerts = [
+  { id: 1, type: 'danger', title: 'Baixa umidade do solo', loc: 'Talhão 12 • Soja', time: '10 min atrás' },
+  { id: 2, type: 'warning', title: 'Risco de praga (Lagarta)', loc: 'Talhão 7 • Milho', time: '2 h atrás' },
+  { id: 3, type: 'info', title: 'Previsão de chuva intensa', loc: 'Região Sul', time: '5 h atrás' }
+]
+
+const weatherForecast = [
+  { day: 'Ter', date: '24/06', icon: Sun, iconColor: 'text-amber-400', tempMax: 25, tempMin: 16, rain: 0 },
+  { day: 'Qua', date: '25/06', icon: CloudRain, iconColor: 'text-blue-400', tempMax: 23, tempMin: 17, rain: 8 },
+  { day: 'Qui', date: '26/06', icon: Sun, iconColor: 'text-amber-400', tempMax: 26, tempMin: 18, rain: 0 },
+  { day: 'Sex', date: '27/06', icon: Cloud, iconColor: 'text-[#9ca3af]', tempMax: 24, tempMin: 17, rain: 0 },
+  { day: 'Sáb', date: '28/06', icon: CloudRain, iconColor: 'text-blue-400', tempMax: 22, tempMin: 16, rain: 15 }
+]
+
+const alertStyles = {
+  danger: 'bg-red-500/10 border-red-500/20',
+  warning: 'bg-amber-500/10 border-amber-500/20',
+  info: 'bg-blue-500/10 border-blue-500/20',
+}
+const alertIconColors = {
+  danger: 'text-red-500',
+  warning: 'text-amber-500',
+  info: 'text-blue-500',
 }
 
-const healthColor = value => {
-  if (value >= 75) return '#256f49'
-  if (value >= 55) return '#a66812'
-  return '#b42318'
+// ── Helpers do mapa: centróide do talhão + marcador (folha/alerta) ──
+function centroid(coords) {
+  const lat = coords.reduce((s, c) => s + c[0], 0) / coords.length
+  const lng = coords.reduce((s, c) => s + c[1], 0) / coords.length
+  return [lat, lng]
 }
 
-function KpiCard({ icon: Icon, label, value, detail, loading, tone = 'primary' }) {
-  const colors = {
-    primary: 'bg-primary-soft text-primary',
-    info: 'bg-info-soft text-info',
-    warning: 'bg-warning-soft text-warning',
-    danger: 'bg-danger-soft text-danger',
-  }
+function fieldIcon(field) {
+  const isAlert = field.healthIndex < 60
+  const IconComp = isAlert ? AlertTriangle : Leaf
+  const bg = isAlert ? '#ef4444' : '#15803d'
+  const html = renderToStaticMarkup(<IconComp size={13} color="#fff" strokeWidth={2.5} />)
+  return L.divIcon({
+    html: `<div style="background:${bg};width:26px;height:26px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.35);box-shadow:0 2px 6px rgba(0,0,0,0.4)">${html}</div>`,
+    className: '',
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  })
+}
 
+// ── Mini sparkline decorativo pros cards de métrica ──
+function Sparkline({ color, points }) {
   return (
-    <Card className="dashboard-card dashboard-fade-in p-4">
-      {loading ? (
-        <>
-          <Skeleton className="mb-3 h-4 w-28" />
-          <Skeleton className="h-8 w-20" />
-        </>
-      ) : (
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-muted">{label}</p>
-            <p className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-ink">{value}</p>
-            <p className="mt-1 text-xs text-muted">{detail}</p>
-          </div>
-          <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colors[tone]}`}>
-            <Icon size={21} />
-          </div>
-        </div>
-      )}
-    </Card>
+    <svg width="52" height="20" viewBox="0 0 52 20" className="ml-auto shrink-0 opacity-90">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IndexRow({ icon: Icon, color, bg, label, value }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: bg }}>
+        <Icon size={16} style={{ color }} />
+      </div>
+      <div>
+        <p className="text-[11px] leading-none text-[#737373]">{label}</p>
+        <p className="mt-1 text-sm font-bold text-white">{value}<span className="text-[10px] font-normal text-[#525252]">/100</span></p>
+      </div>
+    </div>
   )
 }
 
 export default function Dashboard() {
-  const [toast, setToast] = useState('')
-  const dashboard = useAsync(() => agromindService.dashboard(), [])
-  const farms = useAsync(() => agromindService.farms(), [])
-  const alerts = useAsync(() => agromindService.alerts({ page: 1, size: 5 }), [])
-
-  const farmRows = farms.data?.length ? farms.data : fallbackFarms
-  const stats = dashboard.data ?? {
-    totalFazendas: farmRows.length,
-    totalTalhoes: farmRows.reduce((sum, farm) => sum + (farm.fieldsCount ?? 0), 0),
-    totalCulturas: cropMix.length,
-    alertasAtivos: farmRows.reduce((sum, farm) => sum + (farm.activeAlerts ?? 0), 0),
-    diagnosticosHoje: 0,
-  }
-
-  const averageHealth = useMemo(() => {
-    if (!farmRows.length) return 0
-    return Math.round(farmRows.reduce((sum, farm) => sum + (farm.healthIndex ?? 0), 0) / farmRows.length)
-  }, [farmRows])
-
-  const activeAlerts = alerts.data?.items ?? []
-  const refreshAll = async () => {
-    await Promise.all([dashboard.refresh(), farms.refresh(), alerts.refresh()])
-    setToast('Dados atualizados.')
-  }
+  const healthIndex = 82
 
   return (
-    <div className="space-y-5">
-      <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-surface via-surface to-surface-muted p-6 shadow-[0_16px_48px_rgba(79,226,136,0.1)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary-soft/50 px-3 py-1.5 text-sm font-semibold text-primary">
-              <Sparkles size={14} />
-              Centro de operações
-            </div>
-            <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.03em] text-ink">Panorama operacional</h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted">Fazendas, clima, alertas e saúde das áreas em uma visão executiva e preparada para decisão.</p>
+    <div className="space-y-4">
+
+      {/* ── SEÇÃO SUPERIOR: MAPA E PAINEL DA FAZENDA / ALERTAS ── */}
+      <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+
+        {/* Box do Mapa Georreferenciado */}
+        <div className="bg-[#111311] border border-white/[0.03] rounded-xl p-4 flex flex-col h-[440px]">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-white">Visão da operação</h2>
+            <button className="text-xs font-semibold text-[#22c55e] border border-[#22c55e]/25 rounded-lg px-3 py-1.5 hover:bg-[#22c55e]/10 transition flex items-center gap-1.5">
+              Ver todas as fazendas <ArrowRight size={14} />
+            </button>
           </div>
-          <Button variant="secondary" onClick={refreshAll}>
-            <RefreshCw size={16} /> Atualizar
-          </Button>
-        </div>
-      </Card>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard loading={dashboard.loading} icon={Home} label="Fazendas" value={stats.totalFazendas} detail="propriedades cadastradas" />
-        <KpiCard loading={dashboard.loading} icon={MapPin} label="Talhões" value={stats.totalTalhoes} detail="áreas produtivas" tone="info" />
-        <KpiCard loading={dashboard.loading} icon={Sprout} label="Culturas" value={stats.totalCulturas} detail="safras monitoradas" />
-        <KpiCard loading={dashboard.loading} icon={AlertTriangle} label="Alertas ativos" value={stats.alertasAtivos} detail="requerem ação" tone={stats.alertasAtivos ? 'danger' : 'primary'} />
-        <KpiCard loading={dashboard.loading} icon={Activity} label="Saúde média" value={`${averageHealth}/100`} detail="índice consolidado" tone="warning" />
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[1.35fr_.65fr]">
-        <Card className="dashboard-card overflow-hidden">
-          <CardHeader
-            title="Mapa de saúde dos talhões"
-            eyebrow="GIS operacional"
-            action={<Link to="/fazendas" className="text-sm font-semibold text-primary hover:text-primary-strong">Ver fazendas</Link>}
-          />
-          <div className="h-[420px] p-3">
-            <MapContainer center={[-24.038, -52.373]} zoom={12} className="h-full w-full" zoomControl>
-              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="Esri, Maxar" />
+          <div className="flex-1 rounded-lg overflow-hidden relative border border-white/[0.02]">
+            <MapContainer center={[-24.158, -52.492]} zoom={14} className="h-full w-full z-0" zoomControl={false}>
+              <ZoomControl position="topleft" />
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="Esri" />
               {fieldShapes.map(field => (
                 <Polygon
                   key={field.id}
                   positions={field.coords}
-                  pathOptions={{ color: healthColor(field.healthIndex), fillColor: healthColor(field.healthIndex), fillOpacity: 0.42, weight: 2 }}
-                >
-                  <Tooltip permanent direction="center" className="leaflet-tooltip-clean">
-                    <span className="rounded-md border bg-white/95 px-2 py-1 text-xs font-bold shadow-sm" style={{ color: healthColor(field.healthIndex), borderColor: healthColor(field.healthIndex) }}>
-                      {field.nome}
-                    </span>
-                  </Tooltip>
-                </Polygon>
+                  pathOptions={{ color: field.color, fillColor: field.color, fillOpacity: 0.45, weight: 1.5 }}
+                />
+              ))}
+              {fieldShapes.map(field => (
+                <Marker key={`marker-${field.id}`} position={centroid(field.coords)} icon={fieldIcon(field)} />
               ))}
             </MapContainer>
-          </div>
-        </Card>
 
-        <div className="space-y-5">
-          <Card className="dashboard-card">
-            <CardHeader title="Alertas prioritários" eyebrow="Fila de risco" action={<Link to="/alertas" className="text-sm font-semibold text-primary">Abrir</Link>} />
-            <div className="space-y-2 p-4">
-              {alerts.loading ? (
-                Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-14" />)
-              ) : activeAlerts.length ? (
-                activeAlerts.map(alert => (
-                  <div key={alert.id} className="rounded-xl border border-border bg-surface-muted p-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-bold text-ink">{alert.tipoLabel ?? 'Alerta'}</p>
-                        <p className="mt-1 line-clamp-2 text-xs text-muted">{alert.descricao}</p>
-                      </div>
-                      <Badge tone={statusTone(alert.statusLabel)}>{alert.statusLabel}</Badge>
-                    </div>
-                    <p className="mt-2 text-xs text-muted">{alert.farmNome}</p>
-                  </div>
-                ))
-              ) : (
-                <EmptyState title="Sem alertas ativos" text="Nenhuma ocorrência pendente foi retornada pela API." />
-              )}
+            {/* Legenda flutuante sobre o mapa */}
+            <div className="absolute bottom-3 left-3 z-[400] bg-[#111311]/90 backdrop-blur border border-white/10 rounded-lg px-3 py-2.5 max-w-[180px] shadow-lg">
+              <p className="text-xs text-[#a3a3a3] font-medium mb-1.5">Índice de Saúde</p>
+              <div className="h-2 w-full rounded-full bg-gradient-to-r from-red-700 via-yellow-600 to-green-700" />
+              <div className="flex justify-between text-[10px] text-[#737373] mt-1 font-mono">
+                <span>0</span>
+                <span>50</span>
+                <span>100</span>
+              </div>
             </div>
-          </Card>
+          </div>
+        </div>
 
-          <Card>
-            <CardHeader title="Recomendações" eyebrow="Ações sugeridas" />
-            <div className="divide-y divide-border">
-              {recommendations.map(item => (
-                <div key={item.title} className="p-4 transition-colors duration-200 hover:bg-surface-muted/70">
-                  <p className="text-sm font-bold text-ink">{item.title}</p>
-                  <p className="mt-1 text-sm text-muted">{item.text}</p>
+        {/* Coluna lateral direita: Card da Fazenda + Alertas */}
+        <div className="flex flex-col gap-4">
+
+          {/* Card: Fazenda selecionada */}
+          <div className="bg-[#111311] border border-white/[0.03] rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-sm font-bold text-white">Fazenda Santa Clara</h2>
+                <p className="text-[11px] text-[#737373]">Talhão 12 • Região Sul, Paraná</p>
+              </div>
+              <span className="text-[10px] font-semibold text-[#22c55e] bg-[#22c55e]/10 border border-[#22c55e]/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Sprout size={11} /> Ativa
+              </span>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center gap-2">
+                <Sprout size={14} className="text-[#22c55e] shrink-0" />
+                <div>
+                  <p className="text-[#737373] leading-none">Índice de Saúde</p>
+                  <p className="text-white font-bold text-sm">{healthIndex}<span className="text-[10px] text-[#525252] font-normal">/100</span></p>
+                </div>
+                <Sparkline color="#22c55e" points="0,14 8,12 16,15 24,8 32,10 40,4 52,2" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Droplet size={14} className="text-blue-400 shrink-0" />
+                <div>
+                  <p className="text-[#737373] leading-none">Umidade do solo</p>
+                  <p className="text-white font-bold text-sm">65%</p>
+                </div>
+                <Sparkline color="#60a5fa" points="0,6 8,10 16,7 24,13 32,9 40,15 52,11" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Thermometer size={14} className="text-red-400 shrink-0" />
+                <div>
+                  <p className="text-[#737373] leading-none">Temperatura</p>
+                  <p className="text-white font-bold text-sm">24,6°C</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <CloudRain size={14} className="text-blue-400 shrink-0" />
+                <div>
+                  <p className="text-[#737373] leading-none">Chuva acumulada</p>
+                  <p className="text-white font-bold text-sm">68 mm<span className="text-[10px] text-[#525252] font-normal"> • Últimos 7 dias</span></p>
+                </div>
+              </div>
+            </div>
+
+            <button className="text-xs font-semibold text-[#22c55e] mt-3 flex items-center hover:underline">
+              Ver detalhes da fazenda <ChevronRight size={14} className="ml-0.5" />
+            </button>
+          </div>
+
+          {/* Card: Alertas ativos */}
+          <div className="bg-[#111311] border border-white/[0.03] rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-white">Alertas ativos</h2>
+              <button className="text-xs font-semibold text-[#22c55e] hover:underline flex items-center gap-0.5">
+                Ver todos ({activeAlerts.length}) <ChevronRight size={14} />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {activeAlerts.map(alert => (
+                <div key={alert.id} className={`p-3 rounded-xl border flex items-start gap-3 ${alertStyles[alert.type]}`}>
+                  <AlertTriangle size={15} className={`mt-0.5 shrink-0 ${alertIconColors[alert.type]}`} />
+                  <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{alert.title}</p>
+                      <p className="text-xs text-[#737373] mt-0.5">{alert.loc}</p>
+                    </div>
+                    <span className="text-[11px] text-[#737373] font-mono shrink-0">{alert.time}</span>
+                  </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <Card className="dashboard-card lg:col-span-2">
-          <CardHeader title="Tendência dos indicadores" eyebrow="Últimos 30 dias" />
-          <div className="h-72 p-4">
-            <ResponsiveContainer>
-              <AreaChart data={healthTrend} margin={{ top: 6, right: 8, left: -10, bottom: 0 }}>
+      {/* ── SEÇÃO INFERIOR: METEOROLOGIA + ATIVIDADES + ÍNDICES ── */}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+
+        {/* Card 1: Condições Meteorológicas */}
+        <div className="bg-[#111311] border border-white/[0.03] rounded-xl p-4 flex flex-col justify-between h-[280px]">
+          <div>
+            <h3 className="text-sm font-semibold text-white">Condições meteorológicas</h3>
+            <div className="flex items-center gap-4 mt-4">
+              <CloudSun size={36} className="text-amber-400" />
+              <div>
+                <p className="text-3xl font-black text-white leading-none">24°C</p>
+                <p className="text-xs text-[#737373] mt-1">Parcialmente nublado</p>
+              </div>
+              <div className="ml-auto text-right text-xs text-[#737373] font-mono space-y-0.5">
+                <p>Umidade: 65%</p>
+                <p>Vento: 12 km/h NE</p>
+                <p>Sensação: 25°C</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/[0.03] pt-3">
+            <p className="text-[10px] text-[#525252] mb-2 font-bold uppercase tracking-wider">Previsão para os próximos 5 dias</p>
+            <div className="grid grid-cols-5 gap-1 text-center">
+              {weatherForecast.map((w, i) => {
+                const IconComponent = w.icon
+                return (
+                  <div key={i} className="p-1.5 rounded-lg">
+                    <p className="text-xs font-semibold text-white">{w.day}</p>
+                    <p className="text-[9px] text-[#525252] font-mono">{w.date}</p>
+                    <div className="my-1.5 flex justify-center"><IconComponent size={16} className={w.iconColor} /></div>
+                    <p className="text-xs font-bold text-white">{w.tempMax}°</p>
+                    <p className="text-[10px] text-[#525252]">{w.tempMin}°</p>
+                    <p className="text-[9px] text-blue-400 mt-0.5 font-mono">{w.rain} mm</p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <button className="text-xs font-semibold text-[#22c55e] mt-2 flex items-center hover:underline transition">
+            Ver previsão completa <ChevronRight size={14} className="ml-0.5" />
+          </button>
+        </div>
+
+        {/* Card 2: Atividades Recentes */}
+        <div className="bg-[#111311] border border-white/[0.03] rounded-xl p-4 flex flex-col justify-between h-[280px]">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-white">Atividades recentes</h3>
+              <button className="text-xs font-semibold text-[#22c55e] hover:underline flex items-center">Ver todas <ChevronRight size={14} /></button>
+            </div>
+            <div className="space-y-3.5">
+              {recentActivities.map((act, idx) => {
+                const ActIcon = act.icon
+                return (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-[#161916] border border-white/[0.03] flex items-center justify-center shrink-0">
+                      <ActIcon size={14} className={act.iconColor} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white truncate">{act.title}</p>
+                      <p className="text-[11px] text-[#737373] mt-0.5">{act.desc}</p>
+                    </div>
+                    <span className="text-[10px] text-[#525252] font-mono shrink-0">{act.time}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Índices Gerais */}
+        <div className="bg-[#111311] border border-white/[0.03] rounded-xl p-4 flex flex-col h-[280px]">
+          <h3 className="text-sm font-semibold text-white mb-1">Índices gerais</h3>
+
+          <div className="flex-1 grid grid-cols-2 gap-3 items-center">
+            {/* Gauge à esquerda — preenchimento proporcional ao índice */}
+            <div className="flex items-center justify-center relative h-28">
+              <svg viewBox="0 0 200 110" className="w-full h-full">
                 <defs>
-                  <linearGradient id="health" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="5%" stopColor="#256f49" stopOpacity={0.28} />
-                    <stop offset="95%" stopColor="#256f49" stopOpacity={0} />
+                  <linearGradient id="healthGaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#22c55e" />
+                    <stop offset="100%" stopColor="#f59e0b" />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#e6ece3" vertical={false} strokeDasharray="4 4" />
-                <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
-                <ChartTooltip
-                  cursor={{ stroke: '#256f49', strokeWidth: 1, strokeDasharray: '4 4' }}
-                  contentStyle={{ borderRadius: 12, borderColor: '#dde5da', boxShadow: '0 10px 24px rgba(20,32,24,0.08)' }}
+                <path d="M20,100 A80,80 0 0,1 180,100" pathLength="100" fill="none" stroke="#1c1f1c" strokeWidth="16" strokeLinecap="round" />
+                <path
+                  d="M20,100 A80,80 0 0,1 180,100"
+                  pathLength="100"
+                  fill="none"
+                  stroke="url(#healthGaugeGradient)"
+                  strokeWidth="16"
+                  strokeLinecap="round"
+                  strokeDasharray={`${healthIndex} ${100 - healthIndex}`}
                 />
-                <Area type="monotone" dataKey="health" name="Saúde" stroke="#256f49" fill="url(#health)" strokeWidth={2.5} />
-                <Area type="monotone" dataKey="water" name="Umidade" stroke="#256d8f" fill="#256d8f22" strokeWidth={2.2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+              </svg>
+              <div className="absolute bottom-0 text-center">
+                <p className="text-2xl font-black text-white leading-none">{healthIndex}<span className="text-[10px] text-[#525252] font-normal">/100</span></p>
+                <p className="text-[10px] text-[#737373] font-semibold mt-1">Índice médio de saúde</p>
+                <p className="text-[9px] text-[#22c55e] font-mono mt-0.5">↗ +5 pontos vs. anterior</p>
+              </div>
+            </div>
 
-        <Card>
-          <CardHeader title="Mix de culturas" eyebrow="Área monitorada" />
-          <div className="flex h-72 items-center gap-4 p-4">
-            <ResponsiveContainer width="48%" height="100%">
-              <PieChart>
-                <Pie data={cropMix} innerRadius={48} outerRadius={74} dataKey="value" stroke="none" paddingAngle={2}>
-                  {cropMix.map(item => <Cell key={item.name} fill={item.color} />)}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex-1 space-y-3">
-              {cropMix.map(item => (
-                <div key={item.name} className="flex items-center gap-2 text-sm">
-                  <span className="h-2.5 w-2.5 rounded-sm" style={{ background: item.color }} />
-                  <span className="flex-1 text-muted">{item.name}</span>
-                  <span className="font-bold text-ink">{item.value}%</span>
-                </div>
-              ))}
+            {/* Lista à direita */}
+            <div className="space-y-3">
+              <IndexRow icon={Tractor} color="#f97316" bg="rgba(249,115,22,0.15)" label="Produtividade" value={74} />
+              <IndexRow icon={Leaf} color="#22c55e" bg="rgba(34,197,94,0.15)" label="Sustentabilidade" value={88} />
+              <IndexRow icon={Droplet} color="#38bdf8" bg="rgba(56,189,248,0.15)" label="Eficiência hídrica" value={76} />
             </div>
           </div>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader title="Clima semanal" eyebrow="Precipitação e temperatura" action={<Link to="/clima" className="inline-flex items-center gap-1 text-sm font-semibold text-primary">Detalhes <ArrowRight size={14} /></Link>} />
-        <div className="h-64 p-4">
-          <ResponsiveContainer>
-            <BarChart data={weatherSeries} margin={{ top: 6, right: 8, left: -10, bottom: 0 }}>
-              <CartesianGrid stroke="#e6ece3" vertical={false} strokeDasharray="4 4" />
-              <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: '#647266' }} axisLine={false} tickLine={false} />
-              <ChartTooltip
-                cursor={{ fill: 'rgba(37,111,73,0.06)' }}
-                contentStyle={{ borderRadius: 12, borderColor: '#dde5da', boxShadow: '0 10px 24px rgba(20,32,24,0.08)' }}
-              />
-              <Bar dataKey="rain" name="Chuva (mm)" fill="#256d8f" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="temp" name="Temperatura (C)" fill="#a66812" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
         </div>
-      </Card>
 
-      <Toast message={toast} onClose={() => setToast('')} />
+      </div>
     </div>
   )
 }
