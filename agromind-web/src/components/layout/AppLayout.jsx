@@ -1,32 +1,62 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
-import { Bell, Bot, CloudSun, ClipboardList, Home, LayoutDashboard, Leaf, LogOut, Menu, X } from 'lucide-react'
+import { Bell, Bot, ChevronDown, CloudSun, ClipboardList, Home, LayoutDashboard, Leaf, LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../../store/AuthContext'
 import { Button } from '../ui/Primitives'
 
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/fazendas', label: 'Fazendas', icon: Home },
-  { to: '/clima', label: 'Clima', icon: CloudSun },
-  { to: '/alertas', label: 'Alertas', icon: Bell },
-  { to: '/diagnostico', label: 'Diagnostico', icon: ClipboardList },
-  { to: '/chat', label: 'Assistente', icon: Bot },
+  { to: '/dashboard', label: 'Painel', desc: 'Visão geral', icon: LayoutDashboard, accent: '#22c55e' },
+  { to: '/fazendas', label: 'Fazendas', desc: 'Gerenciar propriedades', icon: Home, accent: '#0d9488' },
+  { to: '/clima', label: 'Clima', desc: 'Condições meteorológicas', icon: CloudSun, accent: '#38bdf8' },
+  { to: '/alertas', label: 'Alertas', desc: 'Monitoramento ativo', icon: Bell, accent: '#f97316', dot: true },
+  { to: '/diagnostico', label: 'Diagnósticos', desc: 'Análises e recomendações', icon: ClipboardList, accent: '#a78bfa' },
+  { to: '/chat', label: 'Assistente', desc: 'Com IA', icon: Bot, accent: '#22c55e' },
 ]
 
-function NavItem({ to, label, icon: Icon, onNavigate }) {
+// Subtítulo da saudação varia por página — no Assistente vira um convite direto à ação.
+const greetingSubtitles = {
+  '/chat': 'Como posso te ajudar hoje?',
+}
+const defaultGreetingSubtitle = 'Aqui está o panorama das suas operações'
+
+function greeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Bom dia'
+  if (hour < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
+
+function NavItem({ to, label, desc, icon: Icon, accent, dot, onNavigate }) {
   return (
     <NavLink
-      key={to}
       to={to}
       onClick={onNavigate}
       className={({ isActive }) =>
-        `nav-pill flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold transition ${
-          isActive ? 'bg-primary-soft text-primary shadow-sm' : 'text-muted hover:bg-surface-muted hover:text-ink'
+        `flex items-center gap-2 whitespace-nowrap rounded-xl px-2.5 py-1.5 transition ${
+          isActive ? 'bg-primary-soft' : 'hover:bg-surface-muted'
         }`
       }
     >
-      <Icon size={16} />
-      {label}
+      {({ isActive }) => (
+        <>
+          <span
+            className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+            style={{
+              backgroundColor: isActive ? 'rgba(34,197,94,0.18)' : `${accent}22`,
+              color: isActive ? '#22c55e' : accent,
+            }}
+          >
+            <Icon size={14} />
+            {dot && (
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-surface" />
+            )}
+          </span>
+          <span className="flex flex-col items-start leading-tight">
+            <span className="text-[12.5px] font-semibold text-ink">{label}</span>
+            <span className="hidden text-[10px] text-muted/80 2xl:block">{desc}</span>
+          </span>
+        </>
+      )}
     </NavLink>
   )
 }
@@ -39,8 +69,12 @@ export default function AppLayout() {
 
   const pageTitle = useMemo(() => {
     const item = navItems.find(nav => nav.to === pathname)
-    return item?.label ?? 'Dashboard'
+    return item?.label ?? 'Painel'
   }, [pathname])
+
+  const subtitle = greetingSubtitles[pathname] ?? defaultGreetingSubtitle
+  const firstName = user?.name?.split(' ')[0] ?? 'Usuário'
+  const initials = (user?.name ?? user?.email ?? 'U').slice(0, 2).toUpperCase()
 
   const handleLogout = async () => {
     await logout()
@@ -50,47 +84,71 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <header className="sticky top-0 z-40 border-b border-border/50 bg-surface/80 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
-        <div className="mx-auto flex h-16 items-center justify-between px-4 md:px-8">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex h-16 max-w-[1920px] items-center gap-2 px-4 md:px-6 xl:px-8">
+          {/* Logo — nunca encolhe */}
+          <div className="flex shrink-0 items-center gap-2.5">
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen(value => !value)} aria-label="Abrir menu">
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </Button>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-strong text-slate-950 shadow-lg shadow-primary/30">
-                <Leaf size={18} />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-extrabold tracking-[-0.02em] text-ink">AgroMind</p>
-                <p className="text-xs text-muted/80">AI para agronômia</p>
-              </div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-strong text-slate-950 shadow-lg shadow-primary/30">
+              <Leaf size={16} />
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-sm font-extrabold tracking-[-0.02em] text-ink leading-tight">AgroMind</p>
+              <p className="text-[11px] text-muted/80 leading-none">AI para agronômia</p>
             </div>
           </div>
 
-          <nav className="hidden items-center gap-1.5 lg:flex">
+          {/* Nav — ocupa o meio, sempre cabe: ícone+label sempre, descrição só em telas bem largas */}
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto lg:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map(item => <NavItem key={item.to} {...item} onNavigate={() => setMenuOpen(false)} />)}
           </nav>
 
-          <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-3 rounded-full border border-border/50 bg-surface-muted/70 px-4 py-2 md:flex">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-primary-strong/30 text-xs font-extrabold text-primary">
-                {(user?.name ?? user?.email ?? 'U').slice(0, 2).toUpperCase()}
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-ink">{user?.name?.split(' ')[0] ?? 'Usuário'}</p>
-                <p className="text-xs text-muted">Conta autenticada</p>
-              </div>
+          {/* Usuário — nunca encolhe, texto trunca em vez de empurrar layout */}
+          <div className="ml-auto flex shrink-0 items-center gap-2.5">
+            <div className="hidden max-w-[220px] text-right xl:block">
+              <p className="truncate text-sm font-bold text-ink leading-tight">{greeting()}, {firstName}! 👋</p>
+              <p className="truncate text-[11px] text-muted/80 leading-none mt-0.5">{subtitle}</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Sair">
-              <LogOut size={16} />
-            </Button>
+            <div className="hidden text-right sm:block xl:hidden">
+              <p className="whitespace-nowrap text-sm font-bold text-ink leading-tight">{greeting()}, {firstName}! 👋</p>
+            </div>
+            <button className="flex shrink-0 items-center gap-1 rounded-full pl-0.5 pr-1 hover:bg-surface-muted transition" onClick={handleLogout} aria-label="Menu do usuário">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-primary-strong/30 text-xs font-extrabold text-primary">
+                {initials}
+              </span>
+              <ChevronDown size={14} className="text-muted" />
+            </button>
           </div>
         </div>
 
         {menuOpen && (
           <div className="border-t border-border/50 bg-surface/95 px-4 py-3 lg:hidden">
-            <div className="flex flex-col gap-2">
-              {navItems.map(item => <NavItem key={item.to} {...item} onNavigate={() => setMenuOpen(false)} />)}
-              <button className="nav-pill flex items-center justify-start gap-2 rounded-full px-3.5 py-2 text-sm font-semibold text-muted hover:bg-surface-muted hover:text-ink" onClick={handleLogout}>
+            <div className="flex flex-col gap-1">
+              {navItems.map(item => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 rounded-xl px-3 py-2 transition ${
+                      isActive ? 'bg-primary-soft' : 'hover:bg-surface-muted'
+                    }`
+                  }
+                >
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: `${item.accent}22`, color: item.accent }}
+                  >
+                    <item.icon size={15} />
+                  </span>
+                  <span className="flex flex-col items-start leading-tight">
+                    <span className="text-[13px] font-semibold text-ink">{item.label}</span>
+                    <span className="text-[10.5px] text-muted/80">{item.desc}</span>
+                  </span>
+                </NavLink>
+              ))}
+              <button className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-muted hover:bg-surface-muted hover:text-ink" onClick={handleLogout}>
                 <LogOut size={16} /> Sair
               </button>
             </div>
