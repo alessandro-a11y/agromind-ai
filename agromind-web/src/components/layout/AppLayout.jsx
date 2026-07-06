@@ -56,6 +56,7 @@ function NavItem({ to, label, desc, icon: Icon, accent, dot, onNavigate }) {
 
 export default function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -105,12 +106,22 @@ export default function AppLayout() {
             <div className="hidden text-right sm:block xl:hidden">
               <p className="whitespace-nowrap text-sm font-bold text-ink leading-tight">{greeting()}, {firstName}! 👋</p>
             </div>
-            <button className="flex shrink-0 items-center gap-1 rounded-full pl-0.5 pr-1 hover:bg-surface-muted transition" onClick={handleLogout} aria-label="Menu do usuário">
+            <div className="relative">
+              <button className="flex shrink-0 items-center gap-1 rounded-full pl-0.5 pr-1 hover:bg-surface-muted transition" onClick={() => setUserMenuOpen(v => !v)} aria-label="Menu do usuário">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-primary-strong/30 text-xs font-extrabold text-primary">
                 {initials}
               </span>
               <ChevronDown size={14} className="text-muted" />
-            </button>
+              </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-44 rounded-lg border border-border/50 bg-surface/95 shadow-lg">
+                  <div className="flex flex-col py-2">
+                    <button className="text-left px-4 py-2 text-sm hover:bg-surface-muted" onClick={() => { navigate('/perfil'); setUserMenuOpen(false) }}>Perfil</button>
+                    <button className="text-left px-4 py-2 text-sm hover:bg-surface-muted" onClick={() => { handleLogout() }}>Sair</button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
