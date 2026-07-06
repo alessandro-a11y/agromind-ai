@@ -68,9 +68,13 @@ export const agromindService = {
     return data ?? []
   },
 
-  diagnosisReportUrl: (fieldId, diagnosisId) =>
-    `/api/fields/${fieldId}/diagnosis/${diagnosisId}/report`,
+  diagnosisReportUrl: (fieldId, diagnosisId) => {
+    const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+    return `${base}/fields/${fieldId}/diagnosis/${diagnosisId}/report`
+  },
 
-  diagnosisHistoryReportUrl: fieldId =>
-    `/api/fields/${fieldId}/diagnosis/report`,
+  diagnosisHistoryReportUrl: fieldId => {
+    const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+    return `${base}/fields/${fieldId}/diagnosis/report`
+  },
 }
