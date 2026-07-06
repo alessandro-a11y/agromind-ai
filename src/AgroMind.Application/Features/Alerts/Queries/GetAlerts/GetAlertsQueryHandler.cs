@@ -22,8 +22,13 @@ public class GetAlertsQueryHandler : IRequestHandler<GetAlertsQuery, Result<Page
         GetAlertsQuery    request,
         CancellationToken cancellationToken)
     {
-        // Cache só pra listagem de ativos (mais comum) — página 1
-        var useCache = request.Status == AlertStatus.Active && request.Page == 1;
+        var useCache = request.Status == AlertStatus.Active
+            && request.Page   == 1
+            && request.FarmId == null
+            && request.Tipo   == null
+            && request.From   == null
+            && request.To     == null;
+
         var cacheKey = $"alerts:user:{request.UserId}:active:p1";
 
         if (useCache && _cache.TryGetValue(cacheKey, out PagedResult<AlertDto>? cached))
@@ -36,6 +41,18 @@ public class GetAlertsQueryHandler : IRequestHandler<GetAlertsQuery, Result<Page
         if (request.Status.HasValue)
             query = query.Where(a => a.Status == request.Status.Value);
 
+        if (request.FarmId.HasValue)
+            query = query.Where(a => a.FarmId == request.FarmId.Value);
+
+        if (request.Tipo.HasValue)
+            query = query.Where(a => a.Tipo == request.Tipo.Value);
+
+        if (request.From.HasValue)
+            query = query.Where(a => a.CreatedAt >= request.From.Value);
+
+        if (request.To.HasValue)
+            query = query.Where(a => a.CreatedAt <= request.To.Value);
+
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
@@ -46,11 +63,15 @@ public class GetAlertsQueryHandler : IRequestHandler<GetAlertsQuery, Result<Page
                 a.Id,
                 a.FarmId,
                 a.Farm.Nome,
+                a.FieldId,
+                a.Field != null ? a.Field.Nome : null,
                 a.Tipo,
                 TipoLabel(a.Tipo),
                 a.Descricao,
                 a.Status,
                 StatusLabel(a.Status),
+                a.Severity,
+                SeverityLabel(a.Severity),
                 a.CreatedAt
             ))
             .ToListAsync(cancellationToken);
@@ -89,5 +110,14 @@ public class GetAlertsQueryHandler : IRequestHandler<GetAlertsQuery, Result<Page
         AlertStatus.Resolved => "Resolvido",
         AlertStatus.Ignored  => "Ignorado",
         _                    => status.ToString()
+    };
+
+    private static string SeverityLabel(RiskLevel severity) => severity switch
+    {
+        RiskLevel.Low      => "Baixa",
+        RiskLevel.Medium   => "Média",
+        RiskLevel.High     => "Alta",
+        RiskLevel.Critical => "Alta",
+        _                  => severity.ToString()
     };
 }
