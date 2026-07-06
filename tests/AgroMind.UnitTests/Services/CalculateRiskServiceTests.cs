@@ -14,6 +14,7 @@ public sealed class CalculateRiskServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<CalculateRiskService> _logger;
+    private readonly IEmailService _emailService;
     private readonly CalculateRiskService _sut;
 
     private readonly Farm _farm = new(
@@ -32,7 +33,8 @@ public sealed class CalculateRiskServiceTests : IDisposable
 
         _dbContext = new ApplicationDbContext(options);
         _logger    = Substitute.For<ILogger<CalculateRiskService>>();
-        _sut       = new CalculateRiskService(_dbContext, _logger);
+        _emailService = Substitute.For<IEmailService>();
+        _sut       = new CalculateRiskService(_dbContext, _emailService, _logger);
     }
 
     public void Dispose() => _dbContext.Dispose();
