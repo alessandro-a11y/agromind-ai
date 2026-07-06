@@ -23,17 +23,21 @@ public class AlertsController : ControllerBase
     private Guid UserId =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    /// <summary>Lista alertas do usuário com paginação e filtro opcional por status.</summary>
+    /// <summary>Lista alertas do usuário com paginação e filtros opcionais.</summary>
     [HttpGet]
     public async Task<IActionResult> GetAll(
         [FromQuery] AlertStatus? status = null,
+        [FromQuery] Guid?        farmId = null,
+        [FromQuery] AlertType?   tipo   = null,
+        [FromQuery] DateTime?    from   = null,
+        [FromQuery] DateTime?    to     = null,
         [FromQuery] int page = 1,
         [FromQuery] int size  = 20)
     {
         if (page < 1) page = 1;
         if (size is < 1 or > 100) size = 20;
 
-        var result = await _mediator.Send(new GetAlertsQuery(UserId, status, page, size));
+        var result = await _mediator.Send(new GetAlertsQuery(UserId, status, farmId, tipo, from, to, page, size));
         return Ok(result.Data);
     }
 
