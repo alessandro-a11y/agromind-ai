@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
-import { Bell, Bot, ChevronDown, CloudSun, ClipboardList, Home, LayoutDashboard, Leaf, LogOut, Menu, X } from 'lucide-react'
+import { Bell, ChevronDown, CloudSun, ClipboardList, Home, LayoutDashboard, Leaf, LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../../store/AuthContext'
 import { Button } from '../ui/Primitives'
 
@@ -10,14 +10,7 @@ const navItems = [
   { to: '/clima', label: 'Clima', desc: 'Condições meteorológicas', icon: CloudSun, accent: '#38bdf8' },
   { to: '/alertas', label: 'Alertas', desc: 'Monitoramento ativo', icon: Bell, accent: '#f97316', dot: true },
   { to: '/diagnostico', label: 'Diagnósticos', desc: 'Análises e recomendações', icon: ClipboardList, accent: '#a78bfa' },
-  { to: '/chat', label: 'Assistente', desc: 'Com IA', icon: Bot, accent: '#22c55e' },
 ]
-
-// Subtítulo da saudação varia por página — no Assistente vira um convite direto à ação.
-const greetingSubtitles = {
-  '/chat': 'Como posso te ajudar hoje?',
-}
-const defaultGreetingSubtitle = 'Aqui está o panorama das suas operações'
 
 function greeting() {
   const hour = new Date().getHours()
@@ -72,7 +65,6 @@ export default function AppLayout() {
     return item?.label ?? 'Painel'
   }, [pathname])
 
-  const subtitle = greetingSubtitles[pathname] ?? defaultGreetingSubtitle
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário'
   const initials = (user?.name ?? user?.email ?? 'U').slice(0, 2).toUpperCase()
 
@@ -85,7 +77,7 @@ export default function AppLayout() {
     <div className="min-h-screen bg-canvas text-ink">
       <header className="sticky top-0 z-40 border-b border-border/50 bg-surface/80 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-[1920px] items-center gap-2 px-4 md:px-6 xl:px-8">
-          {/* Logo — nunca encolhe */}
+          {/* Logo */}
           <div className="flex shrink-0 items-center gap-2.5">
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen(value => !value)} aria-label="Abrir menu">
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -99,16 +91,16 @@ export default function AppLayout() {
             </div>
           </div>
 
-          {/* Nav — ocupa o meio, sempre cabe: ícone+label sempre, descrição só em telas bem largas */}
+          {/* Nav */}
           <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto lg:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map(item => <NavItem key={item.to} {...item} onNavigate={() => setMenuOpen(false)} />)}
           </nav>
 
-          {/* Usuário — nunca encolhe, texto trunca em vez de empurrar layout */}
+          {/* Usuário */}
           <div className="ml-auto flex shrink-0 items-center gap-2.5">
             <div className="hidden max-w-[220px] text-right xl:block">
               <p className="truncate text-sm font-bold text-ink leading-tight">{greeting()}, {firstName}! 👋</p>
-              <p className="truncate text-[11px] text-muted/80 leading-none mt-0.5">{subtitle}</p>
+              <p className="truncate text-[11px] text-muted/80 leading-none mt-0.5">Aqui está o panorama das suas operações</p>
             </div>
             <div className="hidden text-right sm:block xl:hidden">
               <p className="whitespace-nowrap text-sm font-bold text-ink leading-tight">{greeting()}, {firstName}! 👋</p>
