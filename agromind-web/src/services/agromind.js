@@ -39,9 +39,13 @@ export const agromindService = {
     return data
   },
 
-  alerts: async ({ status, page = 1, size = 10 } = {}) => {
+  alerts: async ({ status, farmId, tipo, from, to, page = 1, size = 10 } = {}) => {
     const params = { page, size }
     if (status !== undefined && status !== '') params.status = status
+    if (farmId !== undefined && farmId !== '') params.farmId = farmId
+    if (tipo !== undefined && tipo !== '') params.tipo = tipo
+    if (from) params.from = from
+    if (to) params.to = to
     const { data } = await api.get('/alerts', { params })
     return data
   },
