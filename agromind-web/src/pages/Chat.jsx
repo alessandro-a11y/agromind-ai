@@ -26,7 +26,7 @@ const suggestions = [
   { icon: Droplet, color: '#38bdf8', title: 'Irrigação recomendada', desc: 'Veja talhões que podem precisar de irrigação.', cta: 'Ver talhões' },
 ]
 
-function AssistantBubble({ msg }) {
+function AssistantBubble({ msg, onRetry }) {
   return (
     <div className="flex items-start gap-3">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#22c55e]/30 bg-[#22c55e]/10 text-[#22c55e]">
@@ -48,6 +48,9 @@ function AssistantBubble({ msg }) {
             >
               <Copy size={14} />
             </button>
+            {msg.retry && onRetry && (
+              <button className="ml-2 rounded-xl bg-red-600 px-3 py-1 text-xs font-semibold" onClick={() => onRetry(msg.retryText)}>Tentar novamente</button>
+            )}
           </div>
         )}
       </div>
@@ -75,6 +78,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState('')
   const bottomRef = useRef(null)
+  const lastUserRef = useRef(null)
 
   const now = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 
@@ -87,13 +91,14 @@ export default function Chat() {
     setMessages(next)
     setInput('')
     setLoading(true)
+    lastUserRef.current = trimmed
 
     try {
       const response = await aiService.chat({ message: trimmed, history: next.slice(-10) })
       setMessages(current => [...current, { id: Date.now() + 1, role: 'assistant', time: now(), intro: response.reply }])
     } catch {
       setToast('Não foi possível consultar o assistente agora.')
-      setMessages(current => [...current, { id: Date.now() + 1, role: 'assistant', time: now(), intro: 'A consulta falhou. Tente novamente em instantes.' }])
+      setMessages(current => [...current, { id: Date.now() + 1, role: 'assistant', time: now(), intro: 'A consulta falhou. Tente novamente em instantes.', retry: true, retryText: lastUserRef.current }])
     } finally {
       setLoading(false)
       requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }))
