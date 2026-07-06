@@ -273,7 +273,18 @@ export default function Alertas() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {request.loading ? (
+                {request.error ? (
+                  <tr>
+                    <td colSpan={7} className="p-6">
+                      <div className="flex flex-col items-center gap-3">
+                        <p className="text-sm text-red-400">Erro ao carregar alertas: {request.error.message ?? 'Falha na requisição'}</p>
+                        <div className="flex gap-2">
+                          <Button onClick={() => request.refresh()}>Tentar novamente</Button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : request.loading ? (
                   Array.from({ length: 5 }).map((_, i) => <tr key={i}><td colSpan={7} className="p-4"><Skeleton className="h-10" /></td></tr>)
                 ) : visible.length ? visible.map(a => {
                   const type = typeMeta[a.tipo] ?? { icon: AlertTriangle, color: '#9ca3af', label: a.tipoLabel }
