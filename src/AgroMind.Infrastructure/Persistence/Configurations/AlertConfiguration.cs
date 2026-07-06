@@ -11,11 +11,17 @@ public class AlertConfiguration : IEntityTypeConfiguration<Alert>
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Tipo).HasConversion<string>();
         builder.Property(a => a.Status).HasConversion<string>();
+        builder.Property(a => a.Severity).HasConversion<string>();
         builder.Property(a => a.Descricao).IsRequired().HasMaxLength(500);
 
         builder.HasOne(a => a.Farm)
             .WithMany(f => f.Alerts)
             .HasForeignKey(a => a.FarmId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(a => a.Field)
+            .WithMany(f => f.Alerts)
+            .HasForeignKey(a => a.FieldId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
