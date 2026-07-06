@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 import httpx
+import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,9 +32,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Configura CORS a partir da variável ALLOWED_ORIGINS (lista separada por vírgula) ou fallback vazio
+allowed = os.getenv("ALLOWED_ORIGINS", "").strip()
+origins = [o.strip() for o in allowed.split(",") if o.strip()] if allowed else []
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[],
+    allow_origins=origins or [],
     allow_methods=["GET", "POST"],
     allow_headers=["content-type", "x-api-key"],
 )
