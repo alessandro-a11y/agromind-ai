@@ -1,14 +1,17 @@
 import axios from 'axios'
 
+// Usa variável de ambiente VITE_API_URL; fallback para desenvolvimento local
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Injeta token em todo request
+// Interceptor de requisição – adiciona token
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('accessToken')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 })
 
@@ -38,12 +41,17 @@ api.interceptors.response.use(
       return Promise.reject(err)
     }
 
+    // Se for erro 401 e não for endpoint de autenticação, tenta refresh
     if (err.response?.status === 401 && !original._retry) {
       const accessToken  = localStorage.getItem('accessToken')
       const refreshToken = localStorage.getItem('refreshToken')
 
       if (!accessToken || !refreshToken) {
         clearSession()
+        // Redireciona para login apenas se não estiver já na página de login
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
         return Promise.reject(err)
       }
 
