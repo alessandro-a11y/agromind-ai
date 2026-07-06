@@ -117,7 +117,16 @@ export default function Clima() {
         </div>
       </div>
 
-      {!farms.loading && !farms.data?.length ? (
+      {farms.error ? (
+        <div className="p-6">
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm text-red-400">Erro ao carregar fazendas: {farms.error.message ?? 'Falha na requisição'}</p>
+            <div className="flex gap-2">
+              <Button onClick={() => farms.refresh()}>Tentar novamente</Button>
+            </div>
+          </div>
+        </div>
+      ) : !farms.loading && !farms.data?.length ? (
         <EmptyState icon={CloudSun} title="Nenhuma fazenda cadastrada" text="Cadastre uma fazenda para consultar o clima pela API." />
       ) : (
         <>
