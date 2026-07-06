@@ -105,12 +105,23 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Default", policy =>
     {
+        // Ler origens permitidas da configuração (appsettings) ou variável de ambiente Cors:AllowedOrigins
+        var allowed = builder.Configuration["Cors:AllowedOrigins"] ?? Environment.GetEnvironmentVariable("Cors__AllowedOrigins");
+        string[] origins;
+        if (!string.IsNullOrWhiteSpace(allowed))
+        {
+            origins = allowed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
+        else
+        {
+            origins = new[] { "http://localhost:5173", "http://localhost:3000" };
+        }
+
         policy
-            .WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:3000")
+            .WithOrigins(origins)
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
