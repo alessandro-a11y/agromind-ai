@@ -12,7 +12,6 @@ import 'leaflet/dist/leaflet.css'
 import { agromindService } from '../services/agromind'
 import { useAsync } from '../hooks/useAsync'
 import { Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, SearchBox, Select, Skeleton, Toast } from '../components/ui/Primitives'
-import { fallbackFarms } from '../data/operations'
 
 const farmSchema = z.object({
   nome: z.string().min(3, 'Informe ao menos 3 caracteres.'),
@@ -249,7 +248,7 @@ export default function Fazendas() {
   const [toast, setToast] = useState('')
   const [toastTone, setToastTone] = useState('success')
 
-  const farms = useMemo(() => (farmsRequest.data?.length ? farmsRequest.data : fallbackFarms).map(normalizeFarm), [farmsRequest.data])
+const farms = useMemo(() => (farmsRequest.data ?? []).map(normalizeFarm), [farmsRequest.data])
 
   const filtered = useMemo(() => {
     return farms.filter(farm => {
@@ -272,7 +271,7 @@ export default function Fazendas() {
   const saveFarm = async payload => {
     setBusy(true)
     try {
-      if (modal?.farm?.id && !String(modal.farm.id).startsWith('demo-')) {
+      if (modal?.farm?.id) {
         await agromindService.updateFarm(modal.farm.id, payload)
         setToast('Fazenda atualizada.')
       } else {
@@ -291,11 +290,6 @@ export default function Fazendas() {
   }
 
   const deleteFarm = async farm => {
-    if (String(farm.id).startsWith('demo-')) {
-      setToast('Crie uma fazenda real para habilitar exclusão.')
-      setToastTone('danger')
-      return
-    }
     setBusy(true)
     try {
       await agromindService.deleteFarm(farm.id)
