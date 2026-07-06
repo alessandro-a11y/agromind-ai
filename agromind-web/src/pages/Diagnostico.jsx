@@ -265,7 +265,18 @@ export default function Diagnostico() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
-                    {loading ? (
+                    {rowsRequest.error ? (
+                      <tr>
+                        <td colSpan={6} className="p-6">
+                          <div className="flex flex-col items-center gap-3">
+                            <p className="text-sm text-red-400">Erro ao carregar diagnósticos: {rowsRequest.error.message ?? 'Falha na requisição'}</p>
+                            <div className="flex gap-2">
+                              <Button onClick={() => rowsRequest.refresh()}>Tentar novamente</Button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : loading ? (
                       Array.from({ length: 5 }).map((_, i) => (
                         <tr key={i}><td colSpan={6} className="p-4"><Skeleton className="h-9" /></td></tr>
                       ))
