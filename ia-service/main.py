@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 import httpx
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,6 +9,8 @@ from core.config import get_settings
 from core.logging import configure_logging
 from routers import chat, diagnosis, prediction
 from services.groq_service import GroqService
+
+load_dotenv()
 
 configure_logging()
 
@@ -48,3 +51,4 @@ def health():
 @app.get("/")
 def root():
     return {"message": "AgroMind IA Service rodando"}
+
