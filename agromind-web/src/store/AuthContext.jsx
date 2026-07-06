@@ -12,8 +12,9 @@ export function AuthProvider({ children }) {
     if (!token) { setLoading(false); return }
     try {
       const { data } = await authService.me()
-      // /api/auth/me retorna { id, email, name, role }
-      setUser({ id: data.id, name: data.name, email: data.email, role: data.role })
+      // /api/auth/me retorna { id, email, name|nome, role }
+      const name = data.name || data.nome || null
+      setUser({ id: data.id || data.userId || null, name, email: data.email, role: data.role })
     } catch {
       setUser(null)
       localStorage.removeItem('accessToken')
@@ -26,9 +27,9 @@ export function AuthProvider({ children }) {
   useEffect(() => { fetchMe() }, [fetchMe])
 
   const login = async (email, password) => {
-    const data = await authService.login(email, password)
-    // login retorna { accessToken, refreshToken, nome, email, role }
-    setUser({ name: data.nome, email: data.email, role: data.role })
+    await authService.login(email, password)
+    // Após salvar tokens, buscar /me para normalizar dados do usuário
+    await fetchMe()
   }
 
   const logout = async () => {
