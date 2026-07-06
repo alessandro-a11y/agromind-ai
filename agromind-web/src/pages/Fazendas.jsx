@@ -379,7 +379,18 @@ const farms = useMemo(() => (farmsRequest.data ?? []).map(normalizeFarm), [farms
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {farmsRequest.loading ? (
+                {farmsRequest.error ? (
+                  <tr>
+                    <td colSpan={8} className="p-6">
+                      <div className="flex flex-col items-center gap-3">
+                        <p className="text-sm text-red-400">Erro ao carregar fazendas: {farmsRequest.error.message ?? 'Falha na requisição'}</p>
+                        <div className="flex gap-2">
+                          <Button onClick={() => farmsRequest.refresh()}>Tentar novamente</Button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : farmsRequest.loading ? (
                   Array.from({ length: 6 }).map((_, index) => (
                     <tr key={index}><td colSpan={8} className="p-4"><Skeleton className="h-10" /></td></tr>
                   ))
