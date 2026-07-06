@@ -117,7 +117,7 @@ sequenceDiagram
 | Sprint 3 | Scheduler + Alertas (Hangfire + SendGrid) | ✅ Concluído |
 | Sprint 4 | Motor Agronômico (Engine + PDF + OpenTelemetry) | ✅ Concluído |
 | Sprint 5 | Frontend + Deploy (React + Render + CI/CD) | ✅ Concluído |
-| Sprint 6 | IA + ML (FastAPI + Groq + scikit-learn) | 🔄 Em andamento |
+| Sprint 6 | IA + ML (FastAPI + Groq + scikit-learn) | ✅ Concluído |
 
 ---
 
@@ -152,7 +152,7 @@ sequenceDiagram
 |-----------|-----|
 | FastAPI | API Python para serviço de IA |
 | Groq API | Assistente agrícola conversacional e diagnóstico IA |
-| scikit-learn | Previsão de produtividade, pronto para receber modelo treinado |
+| scikit-learn | Previsão de produtividade (Random Forest Regressor com treinamento sintético integrado) |
 
 ### Infraestrutura
 | Tecnologia | Uso |
@@ -168,11 +168,12 @@ sequenceDiagram
 
 - **JWT** com access token de 15 minutos + **Refresh Token Rotation** (7 dias)
 - **BCrypt** com cost 12 para hash de senhas
-- **Rate Limiter** nativo do .NET
-- **AuditLog** via EF Core Interceptor (rastreia todas as operações)
+- **Rate Limiter** nativo do .NET (Fixed Window)
+- **AuditLog** via EF Core Interceptor (rastreia todas as operações de escrita)
 - **CORS** explícito por origem
 - **HTTPS** enforcement em produção
 - Comunicação entre API e FastAPI via **API Key interna**
+- Política de Segurança documentada em [SECURITY.md](file:///d:/agromind-ai/SECURITY.md)
 
 ---
 
