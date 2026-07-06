@@ -11,8 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Resend;
+using Npgsql;
 using QuestPDF.Infrastructure;
+using Resend;
 
 namespace AgroMind.Infrastructure;
 
@@ -23,11 +24,46 @@ public static class DependencyInjection
         IConfiguration configuration,
         IHostEnvironment environment)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        Console.WriteLine("========================================");
+        Console.WriteLine("AGROMIND - INFRASTRUCTURE DEBUG");
+        Console.WriteLine("========================================");
+        Console.WriteLine($"Environment: {environment.EnvironmentName}");
+        Console.WriteLine();
+
+        Console.WriteLine("Connection String:");
+        Console.WriteLine(connectionString ?? "(NULL)");
+        Console.WriteLine();
+
+        Console.WriteLine($"Length: {connectionString?.Length ?? 0}");
+        Console.WriteLine("========================================");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new Exception("A ConnectionStrings:DefaultConnection não foi carregada.");
+
+        try
+        {
+            var builder = new NpgsqlConnectionStringBuilder(connectionString);
+
+            Console.WriteLine("Connection String válida.");
+            Console.WriteLine($"Host: {builder.Host}");
+            Console.WriteLine($"Database: {builder.Database}");
+            Console.WriteLine($"Username: {builder.Username}");
+            Console.WriteLine($"SSL Mode: {builder.SslMode}");
+            Console.WriteLine("========================================");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERRO AO VALIDAR CONNECTION STRING");
+            Console.WriteLine(ex.ToString());
+            throw;
+        }
 
         QuestPDF.Settings.License = LicenseType.Community;
 
         services.AddSingleton<AuditInterceptor>();
+
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseNpgsql(connectionString);
@@ -42,14 +78,15 @@ public static class DependencyInjection
         services.AddSingleton<IEmailService, EmailService>();
         services.AddScoped<ICalculateRiskService, CalculateRiskService>();
         services.AddScoped<IDiagnosisReportService, DiagnosisReportService>();
-        services.Configure<FastApiOptions>(configuration.GetSection("FastApi"));
+
+        services.Configure<FastApiOptions>(
+            configuration.GetSection("FastApi"));
 
         services.AddResend(options =>
             options.ApiToken = configuration["Resend:ApiKey"] ?? string.Empty);
 
         services.AddMemoryCache();
 
-        // Hangfire — InMemory em ambiente de teste, PostgreSQL nos demais
         if (environment.IsEnvironment("Testing"))
         {
             services.AddHangfire(config => config
@@ -71,31 +108,37 @@ public static class DependencyInjection
         services.AddHangfireServer(options =>
         {
             options.WorkerCount = 2;
-            options.Queues = ["default", "agromind"];
+            options.Queues = new[] { "default", "agromind" };
         });
 
         services.AddHttpClient<IWeatherService, WeatherService>();
+
         services.AddHttpClient<IAiDiagnosisService, FastApiDiagnosisService>((_, client) =>
         {
             var baseUrl = configuration["FastApi:BaseUrl"];
+
             if (!string.IsNullOrWhiteSpace(baseUrl))
                 client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
 
-            var timeoutSeconds = configuration.GetValue("FastApi:TimeoutSeconds", 30);
-            client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+            client.Timeout = TimeSpan.FromSeconds(
+                configuration.GetValue("FastApi:TimeoutSeconds", 30));
         });
+
         services.AddHttpClient<IAiChatService, FastApiChatService>((_, client) =>
         {
             var baseUrl = configuration["FastApi:BaseUrl"];
+
             if (!string.IsNullOrWhiteSpace(baseUrl))
                 client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
 
-            var timeoutSeconds = configuration.GetValue("FastApi:TimeoutSeconds", 30);
-            client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+            client.Timeout = TimeSpan.FromSeconds(
+                configuration.GetValue("FastApi:TimeoutSeconds", 30));
         });
+
         services.AddHttpClient("FastApiHealth", client =>
         {
             var baseUrl = configuration["FastApi:BaseUrl"];
+
             if (!string.IsNullOrWhiteSpace(baseUrl))
                 client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
 

@@ -16,6 +16,31 @@ using AgroMind.Infrastructure.Services.Ai;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ==========================
+// DEBUG CONFIGURAÇÃO
+// ==========================
+Console.WriteLine("==========================================");
+Console.WriteLine("AGROMIND - CONFIG DEBUG");
+Console.WriteLine("==========================================");
+
+Console.WriteLine($"ASPNETCORE_ENVIRONMENT: {builder.Environment.EnvironmentName}");
+
+Console.WriteLine("ConnectionStrings__DefaultConnection:");
+Console.WriteLine(
+    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? "(NULL)"
+);
+
+Console.WriteLine();
+
+Console.WriteLine("GetConnectionString(DefaultConnection):");
+Console.WriteLine(
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "(NULL)"
+);
+
+Console.WriteLine("==========================================");
+
 // Serilog
 builder.Host.UseSerilog((context, services, config) =>
 {
@@ -25,14 +50,15 @@ builder.Host.UseSerilog((context, services, config) =>
         .WriteTo.Console();
 });
 
-// Camadas do projeto
+// Camadas
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 
 builder.Services.AddControllers();
 
-// JWT Authentication
+// JWT
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -44,25 +70,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSecret))
         };
 
         options.Events = new JwtBearerEvents
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"[JWT FAIL] Type: {context.Exception.GetType().Name}");
-                Console.WriteLine($"[JWT FAIL] Message: {context.Exception.Message}");
-                
-                if (context.Exception is SecurityTokenInvalidSignatureException)
-                    Console.WriteLine("[JWT FAIL] => CAUSA: Secret key mismatch");
-                else if (context.Exception is SecurityTokenExpiredException)
-                    Console.WriteLine("[JWT FAIL] => CAUSA: Token expirado");
-                else if (context.Exception is SecurityTokenInvalidIssuerException)
-                    Console.WriteLine($"[JWT FAIL] => CAUSA: Issuer invalido");
-                else if (context.Exception is SecurityTokenInvalidAudienceException)
-                    Console.WriteLine($"[JWT FAIL] => CAUSA: Audience invalida");
-                
+                Console.WriteLine($"[JWT FAIL] {context.Exception.Message}");
                 return Task.CompletedTask;
             }
         };
@@ -70,41 +86,46 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Rate Limiter nativo
+// Rate Limiter
 var isTestingEnv = builder.Environment.IsEnvironment("Testing");
+
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("api", opt =>
     {
         opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = isTestingEnv ? 10_000 : 100;
-        opt.QueueLimit = isTestingEnv ? 1_000 : 0;
+        opt.PermitLimit = isTestingEnv ? 10000 : 100;
+        opt.QueueLimit = isTestingEnv ? 1000 : 0;
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
     });
 });
 
-// CORS explícito
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Default", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy
+            .WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
 // Health Checks
 builder.Services.AddHealthChecks()
     .AddCheck<FastApiHealthCheck>("fastapi");
-// .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!) — se o pacote AspNetCore.HealthChecks.NpgSql estiver instalado
-// OpenTelemetry — Tracing e Métricas (HTTP, EF Core e métricas customizadas)
+
+// OpenTelemetry
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     var otlpEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"];
 
     builder.Services.AddOpenTelemetry()
-        .ConfigureResource(resource => resource.AddService(serviceName: "AgroMind.API"))
+        .ConfigureResource(resource =>
+            resource.AddService("AgroMind.API"))
         .WithTracing(tracing =>
         {
             tracing
@@ -113,7 +134,8 @@ if (!builder.Environment.IsEnvironment("Testing"))
                 .AddEntityFrameworkCoreInstrumentation();
 
             if (!string.IsNullOrWhiteSpace(otlpEndpoint))
-                tracing.AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otlpEndpoint));
+                tracing.AddOtlpExporter(o =>
+                    o.Endpoint = new Uri(otlpEndpoint));
         })
         .WithMetrics(metrics =>
         {
@@ -123,7 +145,8 @@ if (!builder.Environment.IsEnvironment("Testing"))
                 .AddMeter(DiagnosisMetrics.MeterName);
 
             if (!string.IsNullOrWhiteSpace(otlpEndpoint))
-                metrics.AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otlpEndpoint));
+                metrics.AddOtlpExporter(o =>
+                    o.Endpoint = new Uri(otlpEndpoint));
         });
 }
 
@@ -148,12 +171,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 if (!app.Environment.IsEnvironment("Testing"))
+{
     app.UseHangfireDashboard("/hangfire");
+}
 
 app.MapControllers();
+
 app.MapHealthChecks("/api/health");
+
 app.MapGet("/", () => "AgroMind API rodando!");
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}
