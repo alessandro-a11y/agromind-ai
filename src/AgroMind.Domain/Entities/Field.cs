@@ -12,6 +12,7 @@ public class Field
     public Farm Farm { get; private set; } = null!;
     public ICollection<Crop> Crops { get; private set; } = new List<Crop>();
     public ICollection<Diagnosis> Diagnoses { get; private set; } = new List<Diagnosis>();
+    public ICollection<Alert> Alerts { get; private set; } = new List<Alert>();
 
     protected Field() { }
 
