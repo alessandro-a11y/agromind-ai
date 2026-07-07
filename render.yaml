@@ -52,7 +52,7 @@ services:
       - key: FastApi__TimeoutSeconds
         value: 30
       - key: AllowedOrigins
-        sync: false
+        value: https://agromind-frontend-t8pp.onrender.com
 
   # FastAPI (Python — IA Service)
   - type: web
