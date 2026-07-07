@@ -44,6 +44,15 @@ public static class DependencyInjection
             var port = uri.Port > 0 ? uri.Port : 5432;
             var database = uri.AbsolutePath.TrimStart('/');
 
+            // Render internal hostnames (dpg-*) não resolvem dentro do Docker.
+            // Converte para o formato externo (ex: dpg-xxx.ohio-postgres.render.com)
+            if (host.StartsWith("dpg-", StringComparison.OrdinalIgnoreCase) &&
+                !host.Contains(".", StringComparison.OrdinalIgnoreCase))
+            {
+                host = host + ".ohio-postgres.render.com";
+                Console.WriteLine($"Hostname convertido para externo: {host}");
+            }
+
             var builder = new NpgsqlConnectionStringBuilder
             {
                 Host = host,
