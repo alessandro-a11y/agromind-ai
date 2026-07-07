@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Usa variável de ambiente VITE_API_URL; fallback para desenvolvimento local
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, ''),
   headers: { 'Content-Type': 'application/json' },
 })
 

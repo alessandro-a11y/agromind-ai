@@ -46,6 +46,7 @@ logs/
 .env
 .env.*
 !.env.example
+!agromind-web/.env.production
 *.pem
 *.key
 *.p12

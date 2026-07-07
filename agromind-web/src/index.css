@@ -127,7 +127,7 @@ button {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: #e8eee5;
+  background: var(--color-surface-muted, #171f1c);
 }
 
 .skeleton::after {
@@ -135,13 +135,13 @@ button {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
   animation: shimmer 1.35s infinite;
 }
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
-  -webkit-text-fill-color: #142018 !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface, #101714) inset !important;
+  -webkit-text-fill-color: var(--color-ink, #f5f8f3) !important;
 }
