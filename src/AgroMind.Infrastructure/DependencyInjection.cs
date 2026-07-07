@@ -51,7 +51,7 @@ public static class DependencyInjection
                 Database = database,
                 Username = username,
                 Password = password,
-                SslMode = SslMode.Require
+                SslMode = SslMode.Prefer
             };
 
             Console.WriteLine("Connection String convertida de URL para ADO.NET.");
