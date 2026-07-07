@@ -52,7 +52,7 @@ function AgroTechFullscreenBackground() {
         {/* Grade de Perspectiva Tecnológica Ampla */}
         <g opacity="0.08">
           {Array.from({ length: 9 }).map((_, i) => (
-            <line key={`v-${i}`} x1={-100 + i * 120} y1="900" x2="200 + i * 50" y2="550" stroke="#4fe288" strokeWidth="1.5" />
+            <line key={`v-${i}`} x1={-100 + i * 120} y1="900" x2={200 + i * 50} y2="550" stroke="#4fe288" strokeWidth="1.5" />
           ))}
           <line x1="0" y1="650" x2="800" y2="650" stroke="#4fe288" strokeWidth="0.5" />
           <line x1="0" y1="720" x2="800" y2="720" stroke="#4fe288" strokeWidth="0.5" />

@@ -105,9 +105,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Default", policy =>
     {
-        var allowed = builder.Configuration["Cors:AllowedOrigins"] 
-            ?? Environment.GetEnvironmentVariable("Cors__AllowedOrigins")
-            ?? Environment.GetEnvironmentVariable("AllowedOrigins");
+        var allowed = Environment.GetEnvironmentVariable("Cors__AllowedOrigins")
+            ?? Environment.GetEnvironmentVariable("AllowedOrigins")
+            ?? builder.Configuration["Cors:AllowedOrigins"];
         string[] origins;
         if (!string.IsNullOrWhiteSpace(allowed))
         {
