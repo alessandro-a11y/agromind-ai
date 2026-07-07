@@ -138,23 +138,12 @@ public static class DependencyInjection
 
         services.AddMemoryCache();
 
-        if (environment.IsEnvironment("Testing"))
-        {
-            services.AddHangfire(config => config
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseInMemoryStorage());
-        }
-        else
-        {
-            services.AddHangfire(config => config
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UsePostgreSqlStorage(options =>
-                    options.UseNpgsqlConnection(connectionString)));
-        }
+        // Hangfire: InMemoryStorage para evitar dependência de DNS interno do banco no Render
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseInMemoryStorage());
 
         services.AddHangfireServer(options =>
         {
