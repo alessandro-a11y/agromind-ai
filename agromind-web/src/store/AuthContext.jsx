@@ -27,9 +27,13 @@ export function AuthProvider({ children }) {
   useEffect(() => { fetchMe() }, [fetchMe])
 
   const login = async (email, password) => {
-    await authService.login(email, password)
-    // Após salvar tokens, buscar /me para normalizar dados do usuário
-    await fetchMe()
+    const data = await authService.login(email, password)
+    // Extrai o nome diretamente do response do login (AuthResponse contém nome)
+    // e já seta o user imediatamente, sem depender exclusivamente do fetchMe
+    const name = data.nome || data.name || null
+    setUser({ id: null, name, email, role: data.role || null })
+    // Tenta buscar /me para enriquecer os dados (id, role), mas não bloqueia
+    fetchMe().catch(() => {})
   }
 
   const logout = async () => {

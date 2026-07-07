@@ -13,6 +13,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using AgroMind.Application.Common.Telemetry;
 using AgroMind.Infrastructure.Services.Ai;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -111,7 +112,9 @@ builder.Services.AddCors(options =>
         string[] origins;
         if (!string.IsNullOrWhiteSpace(allowed))
         {
-            origins = allowed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            origins = allowed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(o => o.TrimEnd('/'))
+                .ToArray();
         }
         else
         {
