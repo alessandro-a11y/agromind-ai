@@ -14,6 +14,7 @@ using OpenTelemetry.Trace;
 using AgroMind.Application.Common.Telemetry;
 using AgroMind.Infrastructure.Services.Ai;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -166,6 +167,14 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 
 var app = builder.Build();
+
+// Aplica migrations automaticamente em produção (Render)
+if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AgroMind.Infrastructure.Persistence.ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
