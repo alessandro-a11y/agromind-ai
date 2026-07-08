@@ -31,7 +31,7 @@ public class AiController : ControllerBase
             .Where(message =>
                 !string.IsNullOrWhiteSpace(message.Content) &&
                 (message.Role == "user" || message.Role == "assistant"))
-            .Select(message => new AiChatMessage(message.Role, message.Content))
+            .Select(message => new AiChatMessage(message.Role, message.Content!))
             .ToList();
 
         var response = await _aiChatService.SendAsync(
@@ -41,7 +41,7 @@ public class AiController : ControllerBase
         return Ok(response);
     }
 
-    public sealed record ChatRequest(string Message, IReadOnlyList<ChatMessage> History);
+    public sealed record ChatRequest(string Message, IReadOnlyList<ChatMessage>? History);
 
-    public sealed record ChatMessage(string Role, string Content);
+    public sealed record ChatMessage(string Role, string? Content);
 }
