@@ -32,9 +32,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     {
         try
         {
-            // 1. Verificar se email já existe
+            // 1. Normalizar e verificar se email já existe
+            var normalizedEmail = request.Email?.Trim().ToLowerInvariant() ?? string.Empty;
             var emailExiste = await _context.Users
-                .AnyAsync(u => u.Email == request.Email, cancellationToken);
+                .AnyAsync(u => u.Email.ToLower() == normalizedEmail, cancellationToken);
 
             if (emailExiste)
             {
@@ -47,7 +48,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
 
             // 3. Criar usuário com refresh token já configurado
             var refreshToken = _jwtService.GenerateRefreshToken();
-            var user = new User(request.Nome, request.Email, senhaHash, request.Role);
+            var user = new User(request.Nome, normalizedEmail, senhaHash, request.Role);
             user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));
 
             // 4. SALVAR UMA ÚNICA VEZ

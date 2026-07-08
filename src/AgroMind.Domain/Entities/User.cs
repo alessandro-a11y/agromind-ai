@@ -23,7 +23,7 @@ public class User
     {
         Id = Guid.NewGuid();
         Nome = nome;
-        Email = email;
+        Email = email?.Trim().ToLowerInvariant() ?? string.Empty;
         SenhaHash = senhaHash;
         Role = role;
         CreatedAt = DateTime.UtcNow;
