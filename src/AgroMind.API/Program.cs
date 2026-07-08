@@ -18,31 +18,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ==========================
-// DEBUG CONFIGURAÇÃO
-// ==========================
-Console.WriteLine("==========================================");
-Console.WriteLine("AGROMIND - CONFIG DEBUG");
-Console.WriteLine("==========================================");
-
-Console.WriteLine($"ASPNETCORE_ENVIRONMENT: {builder.Environment.EnvironmentName}");
-
-Console.WriteLine("ConnectionStrings__DefaultConnection:");
-Console.WriteLine(
-    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-    ?? "(NULL)"
-);
-
-Console.WriteLine();
-
-Console.WriteLine("GetConnectionString(DefaultConnection):");
-Console.WriteLine(
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "(NULL)"
-);
-
-Console.WriteLine("==========================================");
-
 // Serilog
 builder.Host.UseSerilog((context, services, config) =>
 {
@@ -80,7 +55,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"[JWT FAIL] {context.Exception.Message}");
+                Log.Warning("Falha na autenticação JWT: {ExceptionType}", context.Exception.GetType().Name);
                 return Task.CompletedTask;
             }
         };
