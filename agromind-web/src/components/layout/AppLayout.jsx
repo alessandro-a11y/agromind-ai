@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
-import { Bell, ChevronDown, CloudSun, ClipboardList, Home, LayoutDashboard, Leaf, LogOut, Menu, X } from 'lucide-react'
+import { Bell, Bot, ChevronDown, CloudSun, ClipboardList, Home, LayoutDashboard, Leaf, LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../../store/AuthContext'
 import { Button } from '../ui/Primitives'
 
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/clima', label: 'Clima', desc: 'Condições meteorológicas', icon: CloudSun, accent: '#38bdf8' },
   { to: '/alertas', label: 'Alertas', desc: 'Monitoramento ativo', icon: Bell, accent: '#f97316', dot: true },
   { to: '/diagnostico', label: 'Diagnósticos', desc: 'Análises e recomendações', icon: ClipboardList, accent: '#a78bfa' },
+  { to: '/chat', label: 'Assistente IA', desc: 'Consultas inteligentes', icon: Bot, accent: '#22c55e' },
 ]
 
 function greeting() {
