@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import { renderToStaticMarkup } from 'react-dom/server'
 import L from 'leaflet'
@@ -6,10 +6,11 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import {
-  Bean, Edit2, Home, MapPin, MoreVertical, Plus, RefreshCw, Sprout, Trash2, Wheat, SlidersHorizontal
+  Bean, Edit2, Home, MapPin, MoreVertical, Plus, RefreshCw, Sprout, Trash2, Wheat, SlidersHorizontal, MapPinCheck, Loader2
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import { agromindService } from '../services/agromind'
+import { geocodingService } from '../services/geocoding'
 import { useAsync } from '../hooks/useAsync'
 import { Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, SearchBox, Select, Skeleton, Toast } from '../components/ui/Primitives'
 
@@ -201,10 +202,37 @@ function CultureDonut({ farms }) {
 }
 
 function FarmForm({ initial, onSubmit, loading }) {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(farmSchema),
     defaultValues: initial ?? { nome: '', cidade: '', estado: '', latitude: '', longitude: '' },
   })
+  const [geoLoading, setGeoLoading] = useState(false)
+
+  const cidade = watch('cidade')
+  const estado = watch('estado')
+
+  // Geocodifica automaticamente quando cidade ou estado mudam
+  useEffect(() => {
+    if (!cidade || cidade.length < 2) return
+    if (!estado || estado.length !== 2) return
+    
+    const timer = setTimeout(async () => {
+      setGeoLoading(true)
+      try {
+        const result = await geocodingService.search(cidade, estado)
+        if (result) {
+          setValue('latitude', result.latitude.toString())
+          setValue('longitude', result.longitude.toString())
+        }
+      } catch {
+        // Silencia erro — usuário pode preencher manualmente
+      } finally {
+        setGeoLoading(false)
+      }
+    }, 800) // Debounce de 800ms
+
+    return () => clearTimeout(timer)
+  }, [cidade, estado, setValue])
 
   const submit = values => {
     onSubmit({
@@ -228,11 +256,23 @@ function FarmForm({ initial, onSubmit, loading }) {
         <Input {...register('estado')} placeholder="PR" maxLength={2} />
       </Field>
       <Field label="Latitude" error={errors.latitude?.message}>
-        <Input {...register('latitude')} placeholder="-24.038" />
+        <div className="relative">
+          <Input {...register('latitude')} placeholder="-24.038" />
+          {geoLoading && (
+            <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary animate-spin" />
+          )}
+        </div>
       </Field>
       <Field label="Longitude" error={errors.longitude?.message}>
-        <Input {...register('longitude')} placeholder="-52.373" />
+        <div className="relative">
+          <Input {...register('longitude')} placeholder="-52.373" />
+        </div>
       </Field>
+      {geoLoading && (
+        <p className="col-span-full text-xs text-primary flex items-center gap-1">
+          <MapPinCheck size={12} /> Geocodificando endereço...
+        </p>
+      )}
       <button className="hidden" disabled={loading} />
     </form>
   )
