@@ -34,6 +34,19 @@ public class AiController : ControllerBase
             .Select(message => new AiChatMessage(message.Role, message.Content!))
             .ToList();
 
+        // Se o frontend enviou contexto de fazendas, injeta como mensagem do sistema
+        if (!string.IsNullOrWhiteSpace(request.FarmContext))
+        {
+            history.Insert(0, new AiChatMessage("system",
+                $"Você é um assistente especializado em agricultura. " +
+                $"Aqui estão os dados das fazendas do usuário:\n{request.FarmContext}\n\n" +
+                $"Use esses dados para responder perguntas sobre as fazendas. " +
+                $"Quando o usuário perguntar sobre uma fazenda específica, " +
+                $"identifique-a pelo nome e consulte os dados disponíveis. " +
+                $"Combine esses dados com seu conhecimento técnico em agronomia " +
+                $"para dar respostas completas e contextualizadas."));
+        }
+
         var response = await _aiChatService.SendAsync(
             new AiChatRequest(request.Message.Trim(), history),
             cancellationToken);
@@ -41,7 +54,10 @@ public class AiController : ControllerBase
         return Ok(response);
     }
 
-    public sealed record ChatRequest(string Message, IReadOnlyList<ChatMessage>? History);
+    public sealed record ChatRequest(
+        string Message,
+        IReadOnlyList<ChatMessage>? History,
+        string? FarmContext = null);
 
     public sealed record ChatMessage(string Role, string? Content);
 }
