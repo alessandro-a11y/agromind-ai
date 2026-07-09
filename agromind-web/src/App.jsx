@@ -1,8 +1,11 @@
 import { lazy, Suspense, Component } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './store/AuthContext'
+import { ToastProvider } from './components/ui/ToastContext'
+import { TooltipProvider } from './components/ui/Tooltip'
 import PrivateRoute from './components/layout/PrivateRoute'
 import AppLayout from './components/layout/AppLayout'
+import { LoadingScreen } from './components/ui/Primitives'
 import { AlertTriangle } from 'lucide-react'
 
 // Evita tela branca quando uma página lazy falha ao carregar
@@ -42,21 +45,19 @@ const Alertas = lazy(() => import('./pages/Alertas'))
 const Diagnostico = lazy(() => import('./pages/Diagnostico'))
 const Chat = lazy(() => import('./pages/Chat'))
 
-function LoadingScreen() {
-  return (
-    <div className="flex h-screen items-center justify-center bg-canvas">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-    </div>
-  )
+function LoadingFallback() {
+  return <LoadingScreen />
 }
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ErrorBoundary>
-          <Suspense fallback={<LoadingScreen />}>
-            <Routes>
+        <ToastProvider>
+          <TooltipProvider delayDuration={300}>
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -70,8 +71,10 @@ export default function App() {
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
-          </Suspense>
-        </ErrorBoundary>
+              </Suspense>
+            </ErrorBoundary>
+          </TooltipProvider>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   )

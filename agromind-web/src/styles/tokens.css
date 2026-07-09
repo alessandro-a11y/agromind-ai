@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* ─── Typography ─── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+
+  /* ─── Colors ─── */
+  --color-canvas: #060b08;
+  --color-surface: #101714;
+  --color-surface-muted: #171f1c;
+  --color-surface-elevated: #1a2420;
+  --color-surface-raised: #1c2a25;
+  --color-border: #24312b;
+  --color-border-subtle: rgba(36, 49, 43, 0.6);
+  --color-border-hover: #2d3d36;
+
+  --color-ink: #f5f8f3;
+  --color-ink-secondary: #d0dfd1;
+  --color-muted: #9fb0a0;
+  --color-muted-darker: #7a8f7c;
+
+  --color-primary: #4fe288;
+  --color-primary-strong: #2fd26c;
+  --color-primary-soft: rgba(79, 226, 136, 0.16);
+  --color-primary-glow: rgba(79, 226, 136, 0.08);
+
+  --color-info: #66c8ff;
+  --color-info-soft: rgba(102, 200, 255, 0.16);
+
+  --color-warning: #ffbb5c;
+  --color-warning-soft: rgba(255, 187, 92, 0.18);
+
+  --color-danger: #ff6b6b;
+  --color-danger-soft: rgba(255, 107, 107, 0.16);
+
+  /* ─── Spacing ─── */
+  --spacing-page: 1.5rem;
+  --spacing-section: 1rem;
+  --spacing-card: 1.25rem;
+
+  /* ─── Border Radius ─── */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ─── Shadows ─── */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.24);
+  --shadow-strong: 0 20px 50px rgba(0, 0, 0, 0.32);
+  --shadow-glow: 0 0 24px rgba(79, 226, 136, 0.12);
+  --shadow-glow-strong: 0 0 40px rgba(79, 226, 136, 0.18);
+
+  /* ─── Layout ─── */
+  --sidebar-width: 15.5rem;
+  --sidebar-collapsed: 4.25rem;
+  --navbar-height: 3.75rem;
+}

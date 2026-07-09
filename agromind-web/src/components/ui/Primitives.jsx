@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2, Loader2, Search, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Info, Loader2, Search, X } from 'lucide-react'
 
 export function Button({ variant = 'primary', size = 'md', className = '', loading, children, ...props }) {
   const variants = {
@@ -6,6 +6,7 @@ export function Button({ variant = 'primary', size = 'md', className = '', loadi
     secondary: 'bg-surface text-ink border border-border hover:bg-surface-muted hover:border-white/10',
     ghost: 'bg-transparent text-muted hover:bg-surface-muted hover:text-ink',
     danger: 'bg-danger text-white hover:bg-red-600 shadow-lg shadow-danger/20',
+    outline: 'bg-transparent text-primary border border-primary/30 hover:bg-primary-soft',
   }
   const sizes = {
     sm: 'h-8 px-3 text-xs',
@@ -26,12 +27,20 @@ export function Button({ variant = 'primary', size = 'md', className = '', loadi
   )
 }
 
-export function Card({ children, className = '' }) {
+export function Card({ children, className = '', hover = false, padding = true }) {
   return (
-    <section className={`rounded-xl border border-border/60 bg-surface shadow-md hover:shadow-lg transition-shadow duration-300 ${className}`}>
+    <section
+      className={`rounded-xl border border-border/60 bg-surface shadow-md transition-all duration-300 ${
+        hover ? 'dashboard-card hover:border-primary/20' : 'hover:shadow-lg'
+      } ${padding ? '' : 'overflow-hidden'} ${className}`}
+    >
       {children}
     </section>
   )
+}
+
+export function CardBody({ children, className = '' }) {
+  return <div className={`p-[var(--spacing-card)] ${className}`}>{children}</div>
 }
 
 export function CardHeader({ title, eyebrow, action, className = '' }) {
@@ -97,16 +106,55 @@ export function SearchBox({ value, onChange, placeholder = 'Buscar...' }) {
 }
 
 export function Skeleton({ className = '' }) {
-  return <div className={`skeleton rounded-lg ${className}`} />
+  return <div className={`skeleton rounded-lg ${className}`} aria-hidden="true" />
+}
+
+export function SkeletonGroup({ count = 3, className = 'h-40' }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: count }, (_, i) => (
+        <Skeleton key={i} className={className} />
+      ))}
+    </div>
+  )
+}
+
+export function LoadingOverlay({ label = 'Carregando...' }) {
+  return (
+    <div className="fixed inset-0 z-[2000] flex flex-col items-center justify-center gap-4 bg-canvas/80 backdrop-blur-sm animate-fade-in">
+      <div className="relative flex h-12 w-12 items-center justify-center">
+        <div className="absolute inset-0 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+        <Loader2 size={20} className="text-primary animate-pulse" />
+      </div>
+      <p className="text-sm font-medium text-muted">{label}</p>
+    </div>
+  )
+}
+
+export function LoadingScreen({ label = 'Carregando AgroMind...' }) {
+  return (
+    <div className="flex h-screen flex-col items-center justify-center gap-5 bg-canvas">
+      <div className="relative flex h-14 w-14 items-center justify-center">
+        <div className="absolute inset-0 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
+        <span className="text-xl">🌾</span>
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-bold text-ink">AgroMind</p>
+        <p className="mt-1 text-xs text-muted">{label}</p>
+      </div>
+    </div>
+  )
 }
 
 export function EmptyState({ icon: Icon = AlertCircle, title, text, action }) {
   return (
-    <div className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-surface-muted/40 p-8 text-center">
-      <Icon size={28} className="mb-3 text-muted/60" />
-      <h3 className="text-sm font-bold text-ink">{title}</h3>
-      <p className="mt-1 max-w-md text-sm text-muted/80">{text}</p>
-      {action && <div className="mt-4">{action}</div>}
+    <div className="flex min-h-56 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-surface-muted/30 p-10 text-center animate-fade-in">
+      <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-muted text-muted/50">
+        <Icon size={26} />
+      </span>
+      <h3 className="text-base font-bold text-ink">{title}</h3>
+      <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted/80">{text}</p>
+      {action && <div className="mt-5">{action}</div>}
     </div>
   )
 }

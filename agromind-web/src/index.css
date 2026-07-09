@@ -1,26 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import "tailwindcss";
-
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-canvas: #060b08;
-  --color-surface: #101714;
-  --color-surface-muted: #171f1c;
-  --color-border: #24312b;
-  --color-ink: #f5f8f3;
-  --color-muted: #9fb0a0;
-  --color-primary: #4fe288;
-  --color-primary-strong: #2fd26c;
-  --color-primary-soft: rgba(79, 226, 136, 0.16);
-  --color-info: #66c8ff;
-  --color-info-soft: rgba(102, 200, 255, 0.16);
-  --color-warning: #ffbb5c;
-  --color-warning-soft: rgba(255, 187, 92, 0.18);
-  --color-danger: #ff6b6b;
-  --color-danger-soft: rgba(255, 107, 107, 0.16);
-  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.24);
-  --shadow-strong: 0 20px 50px rgba(0, 0, 0, 0.32);
-}
+@import "./styles/tokens.css";
 
 * { box-sizing: border-box; }
 
@@ -34,7 +12,8 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background: radial-gradient(ellipse at top left, rgba(79, 226, 136, 0.06), transparent 50%), linear-gradient(135deg, #0a0e0b 0%, #0f1410 50%, #0a0e0b 100%);
+  background: radial-gradient(ellipse at top left, rgba(79, 226, 136, 0.06), transparent 50%),
+    linear-gradient(135deg, #0a0e0b 0%, #0f1410 50%, #0a0e0b 100%);
   color: #f0f5f2;
   font-family: var(--font-sans);
 }
@@ -59,6 +38,7 @@ button {
   border: 0;
 }
 
+/* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
@@ -69,6 +49,7 @@ button {
   background: #4a5a52;
 }
 
+/* ─── Animations ─── */
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -122,6 +103,7 @@ button {
   animation: dashboardFade .32s ease-out both;
 }
 
+/* ─── Leaflet overrides ─── */
 .leaflet-container {
   font-family: var(--font-sans);
   background: #0f1410;
@@ -136,6 +118,7 @@ button {
 
 .leaflet-tooltip-clean::before { display: none !important; }
 
+/* ─── Skeleton ─── */
 .skeleton {
   position: relative;
   overflow: hidden;
@@ -151,9 +134,20 @@ button {
   animation: shimmer 1.35s infinite;
 }
 
+/* ─── Autofill ─── */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px var(--color-surface, #101714) inset !important;
   -webkit-text-fill-color: var(--color-ink, #f5f8f3) !important;
+}
+
+/* ─── Responsive utilities ─── */
+@media (max-width: 640px) {
+  .hide-mobile { display: none !important; }
+  .dashboard-fade-in { animation-duration: 0.2s; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hide-tablet { display: none !important; }
 }
