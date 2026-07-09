@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using QuestPDF.Infrastructure;
 using Resend;
@@ -49,8 +50,7 @@ public static class DependencyInjection
             if (host.StartsWith("dpg-", StringComparison.OrdinalIgnoreCase) &&
                 !host.Contains(".", StringComparison.OrdinalIgnoreCase))
             {
-                host = host + ".ohio-postgres.render.com";
-                Console.WriteLine($"Hostname convertido para externo: {host}");
+                host += ".ohio-postgres.render.com";
             }
 
             var builder = new NpgsqlConnectionStringBuilder
@@ -63,7 +63,6 @@ public static class DependencyInjection
                 SslMode = SslMode.Prefer
             };
 
-            Console.WriteLine("Connection String convertida de URL para ADO.NET.");
             return builder.ConnectionString;
         }
         catch
@@ -81,43 +80,19 @@ public static class DependencyInjection
         var rawConnectionString = configuration.GetConnectionString("DefaultConnection");
         var connectionString = ConvertToAdoNetFormat(rawConnectionString);
 
-        Console.WriteLine("========================================");
-        Console.WriteLine("AGROMIND - INFRASTRUCTURE DEBUG");
-        Console.WriteLine("========================================");
-        Console.WriteLine($"Environment: {environment.EnvironmentName}");
-        Console.WriteLine();
-
-        Console.WriteLine("Raw Connection String:");
-        Console.WriteLine(rawConnectionString ?? "(NULL)");
-        Console.WriteLine();
-
-        Console.WriteLine("Converted Connection String:");
-        Console.WriteLine(connectionString ?? "(NULL)");
-        Console.WriteLine();
-
-        Console.WriteLine($"Length: {connectionString?.Length ?? 0}");
-        Console.WriteLine("========================================");
-
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new Exception("A ConnectionStrings:DefaultConnection não foi carregada.");
 
+        // Validação da connection string sem expor host/usuário/senha em log.
+        // Em caso de erro de parsing, a exceção do Npgsql já traz contexto suficiente
+        // (tipo de erro) sem que precisemos logar os valores brutos.
         try
         {
-            var builder = new NpgsqlConnectionStringBuilder(connectionString);
-
-            Console.WriteLine("Connection String válida.");
-            Console.WriteLine($"Host: {builder.Host}");
-            Console.WriteLine($"Database: {builder.Database}");
-            Console.WriteLine($"Username: {builder.Username}");
-            Console.WriteLine($"SSL Mode: {builder.SslMode}");
-            Console.WriteLine("========================================");
+            _ = new NpgsqlConnectionStringBuilder(connectionString);
         }
         catch (Exception ex)
         {
-            Console.WriteLine("ERRO AO VALIDAR CONNECTION STRING");
-            Console.WriteLine($"Valor recebido: {rawConnectionString}");
-            Console.WriteLine(ex.ToString());
-            throw;
+            throw new Exception("Connection string inválida (formato não reconhecido pelo Npgsql).", ex);
         }
 
         QuestPDF.Settings.License = LicenseType.Community;
