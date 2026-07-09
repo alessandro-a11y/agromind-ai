@@ -2,7 +2,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { Eye, EyeOff, Lock, Mail, Leaf } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import { Logo } from '../components/ui/Logo'
 import { useState } from 'react'
 import { useAuth } from '../store/AuthContext'
 import { Button, Field, Input } from '../components/ui/Primitives'
@@ -40,14 +41,8 @@ export default function Login() {
         <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-primary/[0.02] to-transparent" />
         
         {/* Logo */}
-        <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft border border-primary/20">
-            <Leaf size={18} className="text-primary" />
-          </div>
-          <div>
-            <p className="font-bold tracking-tight text-ink text-lg">AgroMind</p>
-            <p className="text-[10px] text-muted uppercase tracking-widest font-semibold">Sistema de Gestão Agrícola</p>
-          </div>
+        <div className="relative">
+          <Logo size={36} />
         </div>
 
         <div className="relative max-w-lg space-y-4">
@@ -90,9 +85,7 @@ export default function Login() {
           {/* Cabeçalho do formulário */}
           <div className="text-center space-y-2">
             <div className="flex justify-center mb-4">
-              <div className="h-14 w-14 rounded-2xl bg-primary-soft border border-primary/20 flex items-center justify-center">
-                <Leaf size={24} className="text-primary" />
-              </div>
+              <Logo size={40} variant="icon" className="text-primary" />
             </div>
             <h2 className="text-xl font-bold tracking-tight text-ink">Acesse sua conta</h2>
             <p className="text-sm text-muted">Insira seu e-mail e senha para continuar.</p>

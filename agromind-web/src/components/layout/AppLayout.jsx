@@ -1,8 +1,9 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
-import { Bell, Bot, ChevronDown, CloudSun, ClipboardList, Home, LayoutDashboard, Leaf, LogOut, Menu, X } from 'lucide-react'
+import { Bell, Bot, ChevronDown, CloudSun, ClipboardList, Home, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../../store/AuthContext'
 import { Button } from '../ui/Primitives'
+import { Logo } from '../ui/Logo'
 
 const navItems = [
   { to: '/dashboard', label: 'Painel', desc: 'Visão geral', icon: LayoutDashboard, accent: '#22c55e' },
@@ -84,13 +85,7 @@ export default function AppLayout() {
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen(value => !value)} aria-label="Abrir menu">
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </Button>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-strong text-slate-950 shadow-lg shadow-primary/30">
-              <Leaf size={16} />
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-extrabold tracking-[-0.02em] text-ink leading-tight">AgroMind</p>
-              <p className="text-[11px] text-muted/80 leading-none">AI para agronômia</p>
-            </div>
+            <Logo size={28} variant="full" />
           </div>
 
           {/* Nav */}
