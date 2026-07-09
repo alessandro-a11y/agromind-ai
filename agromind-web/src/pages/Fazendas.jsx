@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import { renderToStaticMarkup } from 'react-dom/server'
 import L from 'leaflet'
@@ -109,17 +109,66 @@ function StatCard({ label, value, unit, hint, icon: Icon, iconColor }) {
   )
 }
 
+// ---------------------------------------------------------------------------
+// RowMenu
+//
+// Antes o dropdown usava `position: absolute` dentro de uma célula da tabela.
+// Como o container da tabela tem `overflow-x-auto`, o CSS força
+// `overflow-y: auto` também (regra do spec: se um eixo tem overflow
+// definido, o outro vira `auto` mesmo sem pedirmos). Isso corta o menu
+// quando a linha está perto do fim da tabela, e o footer de paginação
+// (que vem logo depois no DOM, com seu próprio background) acaba tampando
+// a área onde o menu tentaria renderizar.
+//
+// A correção: calcular a posição do botão na tela (getBoundingClientRect)
+// e renderizar o menu com `position: fixed`, fora do fluxo/overflow da
+// tabela. Assim ele nunca é cortado, não importa a posição da linha.
+// ---------------------------------------------------------------------------
 function RowMenu({ onEdit, onDelete }) {
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+  const anchorRef = useRef(null)
+
+  const MENU_WIDTH = 160 // w-40
+
+  const toggle = () => {
+    if (!open && anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect()
+      const left = Math.min(
+        rect.right - MENU_WIDTH,
+        window.innerWidth - MENU_WIDTH - 8
+      )
+      const top = Math.min(rect.bottom + 4, window.innerHeight - 100)
+      setPos({ top, left: Math.max(left, 8) })
+    }
+    setOpen(v => !v)
+  }
+
+  // Fecha o menu se a tabela for rolada ou a janela for redimensionada,
+  // evitando que ele fique "flutuando" numa posição desatualizada.
+  useEffect(() => {
+    if (!open) return
+    const close = () => setOpen(false)
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
+  }, [open])
+
   return (
-    <div className="relative">
-      <Button variant="ghost" size="icon" onClick={() => setOpen(v => !v)} aria-label="Mais ações">
+    <div ref={anchorRef} className="relative inline-block">
+      <Button variant="ghost" size="icon" onClick={toggle} aria-label="Mais ações">
         <MoreVertical size={16} />
       </Button>
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-20 mt-1 w-40 overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="fixed z-50 w-40 overflow-hidden rounded-xl border border-border bg-surface shadow-xl"
+            style={{ top: pos.top, left: pos.left }}
+          >
             <button
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink hover:bg-surface-muted"
               onClick={() => { setOpen(false); onEdit() }}
@@ -215,7 +264,7 @@ function FarmForm({ initial, onSubmit, loading }) {
   useEffect(() => {
     if (!cidade || cidade.length < 2) return
     if (!estado || estado.length !== 2) return
-    
+
     const timer = setTimeout(async () => {
       setGeoLoading(true)
       try {
@@ -288,7 +337,7 @@ export default function Fazendas() {
   const [toast, setToast] = useState('')
   const [toastTone, setToastTone] = useState('success')
 
-const farms = useMemo(() => (farmsRequest.data ?? []).map(normalizeFarm), [farmsRequest.data])
+  const farms = useMemo(() => (farmsRequest.data ?? []).map(normalizeFarm), [farmsRequest.data])
 
   const filtered = useMemo(() => {
     return farms.filter(farm => {
@@ -501,7 +550,7 @@ const farms = useMemo(() => (farmsRequest.data ?? []).map(normalizeFarm), [farms
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between border-t border-border px-4 py-3">
+          <div className="flex items-center justify-between border-t border-border bg-surface px-4 py-3">
             <p className="text-sm text-muted">Página {page} de {totalPages}</p>
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Anterior</Button>
