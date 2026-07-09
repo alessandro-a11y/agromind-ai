@@ -128,18 +128,37 @@ export function Toast({ message, tone = 'success', onClose }) {
 
 export function Modal({ open, title, children, footer, onClose }) {
   if (!open) return null
+
   return (
-    <div className="fixed inset-0 z-[900] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-xl rounded-xl border border-border/60 bg-surface shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-[900] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div
+        className="w-full max-w-xl rounded-xl border border-border/60 bg-surface shadow-2xl animate-scale-in"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between border-b border-border/40 px-5 py-4">
           <h2 className="text-base font-bold text-ink">{title}</h2>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-muted hover:bg-surface-muted hover:text-ink transition-colors" aria-label="Fechar">
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-muted hover:bg-surface-muted hover:text-ink transition-colors"
+            aria-label="Fechar"
+          >
             <X size={16} />
           </button>
         </div>
         <div className="px-5 py-4">{children}</div>
-        {footer && <div className="flex justify-end gap-2 border-t border-border/40 px-5 py-4">{footer}</div>}
+        {footer && (
+          <div className="flex justify-end gap-2 border-t border-border/40 px-5 py-4">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   )
 }
+
