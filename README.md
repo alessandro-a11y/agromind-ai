@@ -157,9 +157,10 @@ sequenceDiagram
 ### Infraestrutura
 | Tecnologia | Uso |
 |-----------|-----|
-| PostgreSQL 16 | Banco principal |
+| PostgreSQL 16 (Neon) | Banco de dados principal (serverless Postgres) |
 | Docker Compose | Ambiente local (PG + pgAdmin + Seq) |
-| Render | Deploy em nuvem (Frontend + API + FastAPI + DB) |
+| Render | Hospedagem do Frontend (Static Site) |
+| Fly.io | Hospedagem da API .NET e do FastAPI (IA Service) |
 | GitHub Actions | CI/CD com bloqueio de merge em falha |
 
 ---
@@ -253,17 +254,18 @@ INTERNAL_API_KEY=mesma_chave_configurada_no_aspnet
 
 ## 🚀 Deploy
 
-O projeto está configurado para deploy automático na [Render](https://render.com) via `render.yaml`:
+O projeto está configurado em uma arquitetura de hospedagem híbrida e otimizada:
 
-| Serviço | Tipo | URL |
-|---------|------|-----|
-| Frontend | Static Site | `agromind-frontend.onrender.com` |
-| API .NET | Web Service | `agromind-api.onrender.com` |
-| FastAPI | Web Service | `agromind-fastapi.onrender.com` |
-| PostgreSQL | Managed DB | interno |
+| Serviço | Plataforma | Tipo | URL |
+|---------|------------|------|-----|
+| Frontend | [Render](https://render.com) | Static Site | `agromind-frontend.onrender.com` |
+| API .NET | [Fly.io](https://fly.io) | Web Service (Container) | `agromind-api.fly.dev` |
+| FastAPI | [Fly.io](https://fly.io) | Web Service (Container) | `agromind-fastapi.fly.dev` |
+| PostgreSQL | [Neon](https://neon.tech) | Serverless Database | gerenciado externamente |
 
 ### CI/CD
 
+O pipeline está configurado via GitHub Actions para validação e deploy contínuo:
 ```
 Push para main
     │
@@ -274,8 +276,9 @@ GitHub Actions CI
     └── Frontend Lint + Build
     │
     ▼ (somente se tudo passou)
-GitHub Actions CD
-    └── Trigger Render Deploy Hook → Health Check
+Deploy Automático
+    ├── Frontend static build publicado no Render
+    └── API .NET e FastAPI publicados no Fly.io
 ```
 
 > ⚠️ **PRs só são mergeáveis se todos os jobs do CI passarem** (proteção de branch configurada no GitHub).
