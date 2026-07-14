@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import {
-  Activity, ChevronRight, ListChecks, Play, RefreshCw, ShieldAlert, Sprout, TriangleAlert
+  Activity, ListChecks, Play, RefreshCw, ShieldAlert, Sprout, TriangleAlert
 } from 'lucide-react'
 import { agromindService } from '../services/agromind'
 import { useAsync } from '../hooks/useAsync'
@@ -40,24 +40,28 @@ function StatCard({ label, value, hint, icon: Icon, iconColor }) {
 }
 
 function ConditionDonut({ counts, total }) {
-  const segments = [
-    { label: 'Boas condições', value: counts.boa, color: '#22c55e' },
-    { label: 'Atenção necessária', value: counts.atencao, color: '#f59e0b' },
-    { label: 'Situação crítica', value: counts.critica, color: '#ef4444' },
-    { label: 'Sem diagnóstico', value: counts.semDiagnostico, color: '#525252' },
+  const SEGMENTS = [
+    { label: 'Boas condições',     key: 'boa',             color: '#22c55e' },
+    { label: 'Atenção necessária', key: 'atencao',         color: '#f59e0b' },
+    { label: 'Situação crítica',   key: 'critica',         color: '#ef4444' },
+    { label: 'Sem diagnóstico',    key: 'semDiagnostico',  color: '#525252' },
   ]
 
   const gradient = useMemo(() => {
     if (!total) return 'conic-gradient(#1c1f1c 0deg 360deg)'
     let acc = 0
-    const stops = segments.filter(s => s.value > 0).map(s => {
-      const start = (acc / total) * 360
-      acc += s.value
-      const end = (acc / total) * 360
-      return `${s.color} ${start}deg ${end}deg`
-    })
+    const stops = SEGMENTS
+      .map(s => ({ ...s, value: counts[s.key] ?? 0 }))
+      .filter(s => s.value > 0)
+      .map(s => {
+        const start = (acc / total) * 360
+        acc += s.value
+        const end = (acc / total) * 360
+        return `${s.color} ${start}deg ${end}deg`
+      })
     return `conic-gradient(${stops.join(', ')})`
-  }, [total, counts])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [total, counts.boa, counts.atencao, counts.critica, counts.semDiagnostico])
 
   return (
     <div className="flex items-center gap-6">
@@ -68,11 +72,11 @@ function ConditionDonut({ counts, total }) {
         </div>
       </div>
       <div className="flex-1 space-y-2.5">
-        {segments.map(s => (
+        {SEGMENTS.map(s => (
           <div key={s.label} className="flex items-center gap-2 text-xs">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
             <span className="flex-1 text-[#d4d4d4]">{s.label}</span>
-            <span className="text-[#737373] font-mono">{s.value} ({total ? Math.round((s.value / total) * 100) : 0}%)</span>
+            <span className="text-[#737373] font-mono">{counts[s.key] ?? 0} ({total ? Math.round(((counts[s.key] ?? 0) / total) * 100) : 0}%)</span>
           </div>
         ))}
       </div>
@@ -159,15 +163,15 @@ export default function Diagnostico() {
 
   const counts = useMemo(() => {
     let boa = 0, atencao = 0, critica = 0, semDiagnostico = 0
-    rows.forEach(r => {
+    ;(rowsRequest.data ?? []).forEach(r => {
       if (!r.latest) { semDiagnostico++; return }
       const cond = riskToCondition[r.latest.riskLevel] ?? 'Sem diagnóstico'
       if (cond === 'Boa') boa++
       else if (cond === 'Atenção') atencao++
       else critica++
     })
-    return { boa, atencao, critica, semDiagnostico, total: rows.length }
-  }, [rows])
+    return { boa, atencao, critica, semDiagnostico, total: (rowsRequest.data ?? []).length }
+  }, [rowsRequest.data])
 
   const diagnosedCount = counts.total - counts.semDiagnostico
   const gaugeValue = diagnosedCount
@@ -177,11 +181,11 @@ export default function Diagnostico() {
     : 0
 
   const recentDiagnoses = useMemo(() => {
-    return rows
+    return (rowsRequest.data ?? [])
       .filter(r => r.latest?.recommendation)
       .sort((a, b) => new Date(b.latest.createdAt) - new Date(a.latest.createdAt))
       .slice(0, 4)
-  }, [rows])
+  }, [rowsRequest.data])
 
   const runDiagnosis = async fieldId => {
     setRunningId(fieldId)

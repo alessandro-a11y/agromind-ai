@@ -6,13 +6,13 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import {
-  Bean, Edit2, Home, MapPin, MoreVertical, Plus, RefreshCw, Sprout, Trash2, Wheat, SlidersHorizontal, MapPinCheck, Loader2
+  Bean, Edit2, Home, MapPin, MoreVertical, Plus, Sprout, Trash2, Wheat, SlidersHorizontal, MapPinCheck, Loader2
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import { agromindService } from '../services/agromind'
 import { geocodingService } from '../services/geocoding'
 import { useAsync } from '../hooks/useAsync'
-import { Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, SearchBox, Select, Skeleton, Toast } from '../components/ui/Primitives'
+import { Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, SearchBox, Skeleton, Toast } from '../components/ui/Primitives'
 
 const farmSchema = z.object({
   nome: z.string().min(3, 'Informe ao menos 3 caracteres.'),

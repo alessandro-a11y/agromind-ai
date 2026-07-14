@@ -1,5 +1,4 @@
 import { AlertCircle, Plus } from 'lucide-react'
-import { Button } from './Button'
 
 export function EmptyState({
   icon: Icon = AlertCircle,

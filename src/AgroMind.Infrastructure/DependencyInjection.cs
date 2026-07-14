@@ -77,7 +77,7 @@ public static class DependencyInjection
         IConfiguration configuration,
         IHostEnvironment environment)
     {
-        var rawConnectionString = configuration.GetConnectionString("DefaultConnection");
+        var rawConnectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
         var connectionString = ConvertToAdoNetFormat(rawConnectionString);
 
         if (string.IsNullOrWhiteSpace(connectionString))

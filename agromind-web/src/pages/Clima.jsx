@@ -9,7 +9,7 @@ import {
 import { agromindService } from '../services/agromind'
 import { weatherService } from '../services/weather'
 import { useAsync } from '../hooks/useAsync'
-import { Button, Card, CardHeader, EmptyState, Select, Skeleton, Toast } from '../components/ui/Primitives'
+import { Button, Card, EmptyState, Select, Skeleton, Toast } from '../components/ui/Primitives'
 
 function TopStatCard({ children }) {
   return <Card className="p-4">{children}</Card>

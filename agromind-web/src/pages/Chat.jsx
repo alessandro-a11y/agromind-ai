@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import {
-  Bot, Bug, Calendar, CheckCheck, Clock, CloudRain, Copy, Droplet,
-  FileText, History, Leaf, Paperclip, Send, ThumbsDown, ThumbsUp, TriangleAlert, Wheat
+  Bot, Bug, CheckCheck, CloudRain, Copy,
+  FileText, History, Leaf, Paperclip, Send, ThumbsDown, ThumbsUp
 } from 'lucide-react'
 import { aiService } from '../services/ai'
 import { agromindService } from '../services/agromind'
@@ -91,8 +91,9 @@ export default function Chat() {
 
   // Monta resumo das fazendas para contexto do sistema
   const farmContext = useMemo(() => {
-    if (!farms.length) return null
-    return farms.map(f => ({
+    const data = farmsRequest.data
+    if (!data?.length) return null
+    return data.map(f => ({
       id: f.id,
       nome: f.nome,
       cidade: f.cidade,
@@ -105,7 +106,7 @@ export default function Chat() {
       activeAlerts: f.activeAlerts ?? 0,
       healthIndex: f.healthIndex ?? null,
     }))
-  }, [farms])
+  }, [farmsRequest.data])
 
   const now = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 

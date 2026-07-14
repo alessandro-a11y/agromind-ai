@@ -1,11 +1,7 @@
 import { useMemo, useState } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
-import L from 'leaflet'
-import { MapContainer, Marker, Polygon, TileLayer, ZoomControl } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
 import {
-  AlertTriangle, Bell, Bug, Calendar, CheckCircle2, ChevronDown, ChevronRight,
-  CloudRain, CloudSnow, FileText, FlaskConical, MoreHorizontal, RefreshCw, Settings2,
+  AlertTriangle, Bell, Bug, CheckCircle2, ChevronRight,
+  CloudRain, FileText, FlaskConical, MoreHorizontal, RefreshCw, Settings2,
   ShieldOff, Snowflake, Sprout
 } from 'lucide-react'
 import { agromindService } from '../services/agromind'

@@ -116,7 +116,7 @@ function AgroTechForgotBackground() {
 export default function ForgotPassword() {
   const [sent, setSent] = useState(false)
   const [sentEmail, setSentEmail] = useState('')
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({ resolver: zodResolver(schema) })
+  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) })
 
   const submit = async values => {
     await new Promise(r => setTimeout(r, 1200))

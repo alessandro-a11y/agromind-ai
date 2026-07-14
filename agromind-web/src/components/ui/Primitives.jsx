@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2, Info, Loader2, Search, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Loader2, Search, X } from 'lucide-react'
 
 export function Button({ variant = 'primary', size = 'md', className = '', loading, children, ...props }) {
   const variants = {

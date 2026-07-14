@@ -43,7 +43,7 @@ export default function Dashboard() {
   const dashboard = useAsync(() => agromindService.dashboard(), [])
 
   const farms = dashboard.data?.farms ?? []
-  const mappable = useMemo(() => farms.filter((f) => f.latitude && f.longitude), [farms])
+  const mappable = useMemo(() => (dashboard.data?.farms ?? []).filter((f) => f.latitude && f.longitude), [dashboard.data])
   const mapCenter = mappable.length
     ? [mappable[0].latitude, mappable[0].longitude]
     : [-15.78, -47.93]
