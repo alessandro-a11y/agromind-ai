@@ -11,6 +11,7 @@ The following versions of AgroMind AI are currently supported with security upda
 ## Reporting a Vulnerability
 
 If you find a security vulnerability, please do NOT create a public issue. Instead, report it by emailing:
-security@agromind.ai
+
+[EMAIL_ADDRESS]
 
 We will investigate and respond to security issues within 48 hours.
