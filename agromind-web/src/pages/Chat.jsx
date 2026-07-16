@@ -127,7 +127,7 @@ export default function Chat() {
       const response = await aiService.chat({
         message: trimmed,
         history: next.slice(-16).map(m => ({ role: m.role, content: m.content })),
-        farmContext: farmContext ? JSON.stringify(farmContext) : undefined,
+        farmContext: farmContext ?? undefined,
       })
       setMessages(current => [...current, { id: Date.now() + 1, role: 'assistant', content: response.reply, time: now() }])
     } catch {
@@ -201,7 +201,7 @@ export default function Chat() {
               </button>
             </div>
             <p className="text-center text-[11px] text-muted mt-2.5">
-              {farms.length > 0 
+              {farms.length > 0
                 ? `${farms.length} fazenda(s) disponíveis para consulta.`
                 : 'O Assistente pode cometer erros. Sempre confirme informações críticas.'}
             </p>

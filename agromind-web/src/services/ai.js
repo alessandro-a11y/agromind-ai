@@ -19,9 +19,9 @@ export const aiService = {
       message,
       history,
     }
-    // Se houver contexto de fazenda, adiciona como primeira mensagem do sistema
+
     if (farmContext) {
-      payload.farmContext = farmContext
+      payload.farm_context = farmContext
     }
     const { data } = await api.post('/ai/chat', payload)
     return data

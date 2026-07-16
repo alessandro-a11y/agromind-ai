@@ -47,11 +47,14 @@ public class AiController : ControllerBase
                 $"para dar respostas completas e contextualizadas."));
         }
 
-        var response = await _aiChatService.SendAsync(
-            new AiChatRequest(request.Message.Trim(), history),
-            cancellationToken);
-
-        return Ok(response);
+    var response = await _aiChatService.SendAsync(
+        new AiChatRequest(
+        request.FarmContext,
+        request.Message.Trim(),
+        history),
+        cancellationToken);
+        
+      return Ok(response);
     }
 
     public sealed record ChatRequest(

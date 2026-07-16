@@ -81,17 +81,27 @@ public sealed class FastApiChatService : IAiChatService
         }
     }
 
-    private sealed record FastApiChatRequest(
-        [property: JsonPropertyName("message")] string Message,
-        [property: JsonPropertyName("history")] IReadOnlyList<FastApiChatMessage> History)
-    {
-        public static FastApiChatRequest From(AiChatRequest request) =>
-            new(
-                request.Message,
-                request.History
-                    .Select(message => new FastApiChatMessage(message.Role, message.Content))
-                    .ToList());
-    }
+private sealed record FastApiChatRequest(
+    [property: JsonPropertyName("message")]
+    string Message,
+
+    [property: JsonPropertyName("history")]
+    IReadOnlyList<FastApiChatMessage> History,
+
+    [property: JsonPropertyName("farm_context")]
+    string? FarmContext)
+{
+    public static FastApiChatRequest From(AiChatRequest request) =>
+        new(
+            request.Message,
+            request.History
+                .Select(message =>
+                    new FastApiChatMessage(
+                        message.Role,
+                        message.Content))
+                .ToList(),
+            request.FarmContext);
+}
 
     private sealed record FastApiChatMessage(
         [property: JsonPropertyName("role")] string Role,
